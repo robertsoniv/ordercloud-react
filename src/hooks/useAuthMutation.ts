@@ -7,7 +7,7 @@ import { OrderCloudError } from "ordercloud-javascript-sdk";
 import { useMemo } from "react";
 import useOrderCloudContext from "./useOrderCloudContext";
 
-export function useAuthMutation<
+export default function useAuthMutation<
   TData = unknown,
   TError = unknown,
   TVariables = TData,

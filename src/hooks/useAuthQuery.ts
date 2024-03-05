@@ -9,7 +9,7 @@ import { OrderCloudError } from "ordercloud-javascript-sdk";
 import { useEffect, useMemo, useState } from "react";
 import useOrderCloudContext from "./useOrderCloudContext";
 
-export function useAuthQuery<
+export default function useAuthQuery<
   TQueryFnData = unknown,
   TError = OrderCloudError,
   TData = TQueryFnData,
