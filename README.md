@@ -85,7 +85,7 @@ This hook supports all of the normal `UseMutationOptions` documented by Tanstack
 Here is an example of using the `useAuthMutation` hook to create a `UseMutationResult` for modifying the current user. 
 ```tsx
 import { Me, MeUser, OrderCloudError, RequiredDeep } from "ordercloud-javascript-sdk";
-import { queryClient, useAuthMutation } from "../query";
+import { queryClient, useAuthMutation } from "@rwatt451/ordercloud-react";
 import { UseMutationResult } from "@tanstack/react-query";
 
 export function useMutateCurrentUser():UseMutationResult<RequiredDeep<MeUser>, unknown, Partial<MeUser>, unknown> {
