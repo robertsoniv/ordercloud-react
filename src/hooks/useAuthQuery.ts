@@ -18,7 +18,7 @@ export default function useAuthQuery<
   options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
   onError?: (error: OrderCloudError) => void
 ): UseQueryResult<TData, TError> {
-  const { isAuthenticated, defaultErrorHandler } = useOrderCloudContext();
+  const { isAuthenticated, defaultErrorHandler, ...rest } = useOrderCloudContext();
 
   const [delayedIsAuthenticated, setDelayedIsAuthenticated] = useState<boolean>()
 
@@ -41,10 +41,11 @@ export default function useAuthQuery<
   const query = useQuery({ ...options, ...authQueryOptions });
 
   if (query.error) {
+    const error = query.error as unknown as OrderCloudError;
     if (typeof onError === "function") {
-      onError(query.error as unknown as OrderCloudError);
+      onError(error);
     } else if (defaultErrorHandler) {
-      defaultErrorHandler(query.error as unknown as OrderCloudError);
+      defaultErrorHandler(error, {...rest, isAuthenticated});
     }
   }
 

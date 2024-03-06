@@ -92,6 +92,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       scope,
       customScope
     );
+    
     Tokens.SetAccessToken(access_token);
     Tokens.SetRefreshToken(refresh_token);
     setIsAuthenticated(true);

@@ -1,4 +1,5 @@
 import { ApiRole, OrderCloudError } from "ordercloud-javascript-sdk";
+import { IOrderCloudContext } from "./IOrderCloudContext";
 
 export interface IOrderCloudProvider {
     baseApiUrl: string;
@@ -6,6 +7,6 @@ export interface IOrderCloudProvider {
     scope: ApiRole[];
     customScope: string[];
     allowAnonymous: boolean;
-    defaultErrorHandler?: (error:OrderCloudError) => void
+    defaultErrorHandler?: (error:OrderCloudError, context:Omit<IOrderCloudContext, "defaultErrorHandler">) => void
   }
   

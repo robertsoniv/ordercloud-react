@@ -1,7 +1,7 @@
 {
   "name": "@rwatt451/ordercloud-react",
   "private": false,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "files": [
     "package.json",
@@ -29,8 +29,8 @@
     "localforage": "^1.10.0"
   },
   "peerDependencies": {
-    "@tanstack/react-query": "^5.20.1",
-    "@tanstack/react-table": "^8.11.8",
+    "@tanstack/react-query": "^5.24.1",
+    "@tanstack/react-table": "^8.13.2",
     "ordercloud-javascript-sdk": "^5.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

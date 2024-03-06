@@ -15,21 +15,23 @@ export default function useAuthMutation<
 >(
   options: UseMutationOptions<TData, TError, TVariables, TContext>
 ): UseMutationResult<TData, TError, TVariables, TContext> {
-  const { defaultErrorHandler } = useOrderCloudContext();
+  const { defaultErrorHandler, ...rest } = useOrderCloudContext();
 
   const authMutationOptions: Omit<
     UseMutationOptions<TData, TError, TVariables, TContext>,
     "mutationFn"
   > = useMemo(() => {
     return {
-      onError: (error: TError) =>
-        options.onError
-          ? options.onError
-          : defaultErrorHandler
-          ? defaultErrorHandler(error as OrderCloudError)
-          : undefined,
+      onError: (error: TError) => {
+        const e = error as OrderCloudError;
+        return options.onError
+        ? options.onError
+        : defaultErrorHandler
+        ? defaultErrorHandler(e, rest)
+        : undefined
+      }
     };
-  }, [defaultErrorHandler, options.onError]);
+  }, [defaultErrorHandler, options.onError, rest]);
 
   return useMutation({ ...options, ...authMutationOptions });
 }
