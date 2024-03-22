@@ -14,6 +14,7 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   scope: [],
   customScope: [],
   allowAnonymous: false,
+  token: undefined
 };
 
 export const OrderCloudContext = createContext<IOrderCloudContext>(
