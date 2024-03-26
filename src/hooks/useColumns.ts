@@ -13,8 +13,11 @@ const useColumns = (resourceId: string) => {
   const operation = useMemo(() => operationsById[operationId], [operationId, operationsById])
 
   const properties = useMemo(() => {
-    return operation?.responses['200']?.content['application/json']?.schema?.properties.Items.items
-      .properties
+    const response = operation?.responses['200'] as OpenAPIV3.ResponseObject
+    const schema = response?.content?.['application/json']?.schema as OpenAPIV3.SchemaObject
+    const schemaItemArray = schema?.properties?.Items as OpenAPIV3.ArraySchemaObject
+    const schemaObj = schemaItemArray?.items as OpenAPIV3.SchemaObject
+    return schemaObj?.properties
   }, [operation])
 
   const columnHeaders = useMemo(() => {
@@ -24,7 +27,10 @@ const useColumns = (resourceId: string) => {
   }, [properties])
 
   const result = useMemo(() => {
-    const sortable = operation?.parameters?.find((p: OpenAPIV3.ParameterObject) => p.name === 'sortBy')?.schema.items.enum
+    const params = operation?.parameters as OpenAPIV3.ParameterObject[]
+    const schema = params?.find((p: OpenAPIV3.ParameterObject) => p?.name === 'sortBy')?.schema as OpenAPIV3.ArraySchemaObject
+    const schemaItems = schema?.items as OpenAPIV3.SchemaObject
+    const sortable = schemaItems?.enum
     
     return {
       operation,

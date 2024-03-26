@@ -3,6 +3,7 @@ import SwaggerParser from '@apidevtools/swagger-parser'
 import { OpenAPIV3 } from 'openapi-types'
 import { keyBy, mapValues, values, flatten } from 'lodash'
 import Case from 'case'
+import { IOrderCloudOperationObject } from '..'
 
 /**
  * PsuedoResources are meant for grouping together a set of duplicate operations for a given path array
@@ -115,7 +116,7 @@ const buildOperations = (spec?: OpenAPIV3.Document) => {
     psuedoResources.map((pr) => buildOperationsForResource(spec, pr))
   )
 
-  return [...defaultOperations, ...additionalOperations]
+  return [...defaultOperations, ...additionalOperations] as IOrderCloudOperationObject[]
 }
 
 const useApiSpec = (baseUrl?: string) => {

@@ -82,6 +82,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         return;
       }
       setIsAuthenticated(true);
+      setToken(token)
       if (!isAnon) setIsLoggedIn(true);
       return;
     }
