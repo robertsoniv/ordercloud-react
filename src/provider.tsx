@@ -34,11 +34,13 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState<string | undefined>()
 
   const handleLogout = useCallback(() => {
     queryClient.clear();
     setIsAuthenticated(false);
     setIsLoggedIn(false);
+    setToken(undefined)
     Tokens.RemoveAccessToken();
     Tokens.RemoveRefreshToken();
   }, []);
@@ -55,6 +57,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         );
         const { access_token, refresh_token } = response;
         Tokens.SetAccessToken(access_token);
+        setToken(access_token)
         if (rememberMe && refresh_token) {
           Tokens.SetRefreshToken(refresh_token);
         }
@@ -79,6 +82,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         return;
       }
       setIsAuthenticated(true);
+      setToken(token)
       if (!isAnon) setIsLoggedIn(true);
       return;
     }
@@ -120,6 +124,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       allowAnonymous,
       isAuthenticated,
       isLoggedIn,
+      token,
       logout: handleLogout,
       login: handleLogin,
       defaultErrorHandler,
@@ -135,6 +140,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     handleLogin,
     scope,
     defaultErrorHandler,
+    token
   ]);
 
   return (

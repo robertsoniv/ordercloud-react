@@ -28,4 +28,5 @@ export interface IOrderCloudContext {
   customScope: string[];
   allowAnonymous: boolean;
   defaultErrorHandler?: (error:OrderCloudError, context:IOrderCloudErrorContext) => void;
+  token?: string;
 }

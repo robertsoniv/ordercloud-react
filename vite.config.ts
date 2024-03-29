@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { name, version } from "./package.json";
 import path from "path";
 import dts from 'vite-plugin-dts'
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -30,5 +31,8 @@ export default defineConfig({
   define: {
     pkgJson: { name, version },
   },
-  plugins: [react(), dts({ rollupTypes: true })],
+  plugins: [react(), dts({ rollupTypes: true }),       nodePolyfills({
+    include: ["util", "querystring", "http", "https"],
+  }),],
+  
 });
