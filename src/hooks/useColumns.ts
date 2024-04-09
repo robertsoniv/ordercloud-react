@@ -33,7 +33,6 @@ const useColumns = (resourceId: string) => {
     const sortable = schemaItems?.enum
     
     return {
-      operation,
       properties,
       columnHeaders,
       sortable

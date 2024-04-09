@@ -15,3 +15,103 @@ export const defaultRetryFn = (failureCount: number, error: unknown) => {
   }
   return failureCount < 3;
 };
+
+export const isRouteParam = (operation: any, paramName: string) => {
+  return (
+    operation.parameters &&
+    operation.parameters
+      .filter((param: any) => {
+        return param.in === 'path'
+      })
+      .map((param: any) => param.name)
+      .includes(paramName)
+  )
+}
+
+export const getRoutingUrl = (operation: any, params: any)=> {
+  let url = operation.path
+  const paramsTest = params
+  if (url.indexOf('{') > -1) {
+    Object.entries(paramsTest)
+      .filter(([key]: [string, any]) => {
+        return isRouteParam(operation, key)
+      })
+      .forEach(([key, value]: [string, any]) => {
+        if (value) {
+          url = url.replace(`{${key}}`, value)
+        }
+      })
+    return url
+  }
+  return url
+}
+
+type ServiceListOptions = { [key: string]: ServiceListOptions | string }
+
+export const makeQueryString = (params: ServiceListOptions | undefined) => {
+  if(!params) return
+  return `${Object.entries(params)
+    .filter(([, val]: [string, any]) => {
+      return typeof val === 'object'
+        ? Boolean(val.length) || Boolean(Object.values(val).length)
+        : Boolean(val)
+    })
+    .map(([key, val]: [string, any]) => {
+      /**
+       * TODO: Figure out a more dynamic way of checking the openapi spec for
+       * identifying how to parse object values into the query string. Right now
+       * we know that searchOn & sortBy are supposed have 1 key - but there could
+       * be others (right now, or in the future)
+       */
+      if (key === 'filters') {
+        return Object.entries(val)
+          .filter(([fkey, fval]: [string, any]) => {
+            return fkey.length && fval.length
+          })
+          .map(([fkey, fval]: [string, any]) => {
+            return `${fkey}=${encodeURIComponent(fval)}`
+          })
+          .join('&')
+      } else {
+        if (typeof val === 'object' && (key === 'searchOn' || key === 'sortBy')) {
+          return `${key}=${val.map(encodeURIComponent).join(',')}`
+        } else if (typeof val === 'object') {
+          return val
+            .map((v: any) => {
+              return `${key}=${encodeURIComponent(v)}`
+            })
+            .join('&')
+        } else {
+          return `${key}=${encodeURIComponent(val)}`
+        }
+      }
+    })
+    .join('&')}`
+}
+
+export const mapRequestParameters = (
+  getOperation: any,
+  paramsInPath: any,
+  additionalParams?: string[]
+) => {
+  const paramsObj = {} as any
+  const requiredParams = [...getRequiredParamsInPath(getOperation), ...(additionalParams || [])]
+  requiredParams.forEach((param) => {
+    const matchingParam = paramsInPath[param]
+    if (matchingParam) {
+      paramsObj[param] = matchingParam
+    }
+  })
+  return paramsObj
+}
+
+const getRequiredParamsInPath = (getOperation: any) => {
+  const result =
+    getOperation && getOperation?.parameters
+      ? getOperation.parameters.filter((p: any) => p.in === 'path' && p.required).map((p: any) => p.name)
+      : []
+  return result
+}
+
+
+
