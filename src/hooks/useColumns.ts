@@ -1,13 +1,10 @@
 import { useMemo } from 'react'
-import useOrderCloudContext from './useOrderCloudContext';
 import useApiSpec from './useApiSpec';
 import Case from 'case';
 import { OpenAPIV3 } from 'openapi-types';
 
 const useColumns = (resourceId: string) => {
-  const { baseApiUrl } = useOrderCloudContext();
-
-  const { operationsById } = useApiSpec(baseApiUrl)
+  const { operationsById } = useApiSpec()
   const operationId = `${resourceId.charAt(0).toUpperCase() + Case.camel(resourceId.slice(1))}.List`
 
   const operation = useMemo(() => operationsById[operationId], [operationId, operationsById])

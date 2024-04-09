@@ -3,7 +3,7 @@ import SwaggerParser from '@apidevtools/swagger-parser'
 import { OpenAPIV3 } from 'openapi-types'
 import { keyBy, mapValues, values, flatten } from 'lodash'
 import Case from 'case'
-import { IOrderCloudOperationObject } from '..'
+import { IOrderCloudOperationObject, useOrderCloudContext } from '..'
 
 /**
  * PsuedoResources are meant for grouping together a set of duplicate operations for a given path array
@@ -119,8 +119,9 @@ const buildOperations = (spec?: OpenAPIV3.Document) => {
   return [...defaultOperations, ...additionalOperations] as IOrderCloudOperationObject[]
 }
 
-const useApiSpec = (baseUrl?: string) => {
+const useApiSpec = () => {
   const [spec, setSpec] = useState<OpenAPIV3.Document | undefined>()
+  const { baseApiUrl } = useOrderCloudContext();
 
   const retrieveSpec = useCallback(async (url: string) => {
     const result = await SwaggerParser.dereference(`${url}/v1/openapi/v3`)
@@ -145,22 +146,22 @@ const useApiSpec = (baseUrl?: string) => {
 
   useEffect(() => {
     if (
-      baseUrl &&
+      baseApiUrl &&
       spec &&
       spec.info &&
       spec.info.version &&
       spec.info.version.split('.').length === 4 &&
       spec.servers &&
-      spec.servers[0].url === `${baseUrl}/v1`
+      spec.servers[0].url === `${baseApiUrl}/v1`
     ) {
-      validateSpecVersion(baseUrl, spec.info.version)
+      validateSpecVersion(baseApiUrl, spec.info.version)
     }
-  }, [spec, baseUrl, validateSpecVersion])
+  }, [spec, baseApiUrl, validateSpecVersion])
 
   useEffect(() => {
-    if (!baseUrl) return
-      retrieveSpec(baseUrl)
-  }, [baseUrl, retrieveSpec])
+    if (!baseApiUrl) return
+      retrieveSpec(baseApiUrl)
+  }, [baseApiUrl, retrieveSpec])
 
   const result = useMemo(() => {
     const operations = buildOperations(spec)

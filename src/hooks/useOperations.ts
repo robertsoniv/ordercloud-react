@@ -1,11 +1,9 @@
 import { useMemo } from 'react'
-import useOrderCloudContext from './useOrderCloudContext';
 import useApiSpec from './useApiSpec';
 import Case from 'case';
 
 const useOperations = (resource: string) => {
-  const { baseApiUrl } = useOrderCloudContext();
-  const { operationsById } = useApiSpec(baseApiUrl)
+  const { operationsById } = useApiSpec()
   
   const listOperation = useMemo(() => {
     const listOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.List`
