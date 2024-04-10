@@ -25,6 +25,8 @@ interface IPsuedoResource {
   getOperationId: (resourceId: string, operation: OpenAPIV3.OperationObject) => string
 }
 
+const localStoragePrefix = 'OcOpenApi.'
+
 export interface ApiSection extends OpenAPIV3.TagObject {
   'x-id': string
 }
@@ -120,8 +122,19 @@ const buildOperations = (spec?: OpenAPIV3.Document) => {
 }
 
 const useApiSpec = () => {
-  const [spec, setSpec] = useState<OpenAPIV3.Document | undefined>()
   const { baseApiUrl } = useOrderCloudContext();
+  const [spec, setSpec] = useState<OpenAPIV3.Document | undefined>(() => {
+    try {
+      // Get from local storage by key
+      const item = window.localStorage.getItem(`${localStoragePrefix}${baseApiUrl}`)
+      // Parse stored json or if none return initialValue
+      return item ? JSON.parse(item) : undefined
+    } catch (error) {
+      // If error also return initialValue
+      console.log(error)
+      return undefined
+    }
+  })
 
   const retrieveSpec = useCallback(async (url: string) => {
     const result = await SwaggerParser.dereference(`${url}/v1/openapi/v3`)
@@ -129,6 +142,10 @@ const useApiSpec = () => {
     if (v3doc.servers) {
       v3doc.servers[0].url = `${url}/v1`
     }
+        // Clear out swagger specs in localStorage to prevent capacity errors
+        const keys = Object.keys(window.localStorage)
+        keys.filter((k) => k.includes('OcOpenApi')).map((i) => window.localStorage.removeItem(i))
+        window.localStorage.setItem(`${localStoragePrefix}${url}`, JSON.stringify(v3doc))
     setSpec(v3doc)
   }, [])
 
@@ -160,7 +177,15 @@ const useApiSpec = () => {
 
   useEffect(() => {
     if (!baseApiUrl) return
+    try {
+      // Get from local storage by key
+      const item = window.localStorage.getItem(`${localStoragePrefix}${baseApiUrl}`)
+      // Parse stored json or if none return initialValue
+      item ? setSpec(JSON.parse(item)) : retrieveSpec(baseApiUrl)
+    } catch (error) {
+      // If error also return initialValue
       retrieveSpec(baseApiUrl)
+    }
   }, [baseApiUrl, retrieveSpec])
 
   const result = useMemo(() => {
