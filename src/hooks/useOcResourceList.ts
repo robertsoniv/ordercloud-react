@@ -83,9 +83,32 @@ export const useOcResourceList = (
           mutationKey: [saveOperation?.operationId],
           mutationFn: async (resourceData: Partial<unknown>) => await axios.put<unknown>(
             url, resourceData, axiosRequest),
-          onSuccess: (data) => {
-            console.log(data)
+          onSuccess: () => {
             queryClient.resetQueries({queryKey: [saveOperation?.operationId] })
           },
       })
   }
+
+  export const useDeleteOcResource = (
+    resource: string,
+    parameters?: { [key: string]: string }
+    ) => {
+    const { deleteOperation } = useOperations(resource)
+    const { baseApiUrl, token } = useOrderCloudContext()
+    const url = deleteOperation?.path ? getRoutingUrl(deleteOperation, parameters): ''
+  
+    const axiosRequest: AxiosRequestConfig = {
+          method: deleteOperation? deleteOperation.verb.toLocaleLowerCase() : '',
+          baseURL: baseApiUrl + '/v1',
+          headers: { Authorization: `Bearer ${token}` },
+        }
+  
+    return useMutation({
+        mutationKey: [deleteOperation?.operationId],
+        mutationFn: async () => await axios.delete<unknown>(
+          url, axiosRequest),
+        onSuccess: () => {
+          queryClient.resetQueries({queryKey: [deleteOperation?.operationId] })
+        },
+    })
+}

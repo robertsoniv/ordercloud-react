@@ -2,7 +2,8 @@ import useOrderCloudContext from "./useOrderCloudContext";
 import useAuthQuery from "./useAuthQuery";
 import useAuthMutation from "./useAuthMutation"
 import useColumns from "./useColumns";
-import { useOcResourceList, useOcResourceGet, useMutateOcResource } from "./useOcResourceList";
+import { useOcResourceList, useOcResourceGet, useMutateOcResource, useDeleteOcResource } from "./useOcResourceList";
+import { useOcForm } from "./useOcForm";
 
 export {
     useAuthQuery,
@@ -11,5 +12,7 @@ export {
     useColumns,
     useOcResourceList,
     useOcResourceGet,
-    useMutateOcResource
+    useMutateOcResource,
+    useDeleteOcResource,
+    useOcForm
 }

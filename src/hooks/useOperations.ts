@@ -20,13 +20,19 @@ const useOperations = (resource: string) => {
    return operationsById[listOperationId]
   }, [operationsById, resource])
 
+  const deleteOperation = useMemo(() => {
+    const listOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.Delete`
+   return operationsById[listOperationId]
+  }, [operationsById, resource])
+
   const result = useMemo(() => {    
     return {
       listOperation,
       getOperation,
-      saveOperation
+      saveOperation,
+      deleteOperation
     }
-  }, [getOperation, listOperation, saveOperation])
+  }, [getOperation, listOperation, saveOperation, deleteOperation])
 
   return result
 }
