@@ -1,5 +1,6 @@
 import { AccessToken, ApiRole, OrderCloudError } from "ordercloud-javascript-sdk";
 import { IOrderCloudErrorContext } from "./IOrderCloudErrorContext";
+import { OpenAPIV3 } from "openapi-types";
 
 export interface IOrderCloudContext {
   /**
@@ -29,4 +30,5 @@ export interface IOrderCloudContext {
   allowAnonymous: boolean;
   defaultErrorHandler?: (error:OrderCloudError, context:IOrderCloudErrorContext) => void;
   token?: string;
+  xpSchemas?: OpenAPIV3.SchemaObject
 }

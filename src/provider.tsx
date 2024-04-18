@@ -1,5 +1,10 @@
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { Auth, Configuration, OrderCloudError, Tokens } from "ordercloud-javascript-sdk";
+import {
+  Auth,
+  Configuration,
+  OrderCloudError,
+  Tokens,
+} from "ordercloud-javascript-sdk";
 import {
   FC,
   PropsWithChildren,
@@ -20,12 +25,13 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   scope,
   customScope,
   allowAnonymous,
+  xpSchemas,
   defaultErrorHandler,
 }) => {
   useEffect(() => {
     Configuration.Set({
       cookieOptions: {
-        prefix: clientId
+        prefix: clientId,
       },
       baseApiUrl,
       clientID: clientId,
@@ -34,13 +40,13 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [token, setToken] = useState<string | undefined>()
+  const [token, setToken] = useState<string | undefined>();
 
   const handleLogout = useCallback(() => {
     queryClient.clear();
     setIsAuthenticated(false);
     setIsLoggedIn(false);
-    setToken(undefined)
+    setToken(undefined);
     Tokens.RemoveAccessToken();
     Tokens.RemoveRefreshToken();
   }, []);
@@ -57,7 +63,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         );
         const { access_token, refresh_token } = response;
         Tokens.SetAccessToken(access_token);
-        setToken(access_token)
+        setToken(access_token);
         if (rememberMe && refresh_token) {
           Tokens.SetRefreshToken(refresh_token);
         }
@@ -82,7 +88,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         return;
       }
       setIsAuthenticated(true);
-      setToken(token)
+      setToken(token);
       if (!isAnon) setIsLoggedIn(true);
       return;
     }
@@ -96,18 +102,12 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       scope,
       customScope
     );
-    
+
     Tokens.SetAccessToken(access_token);
     Tokens.SetRefreshToken(refresh_token);
     setIsAuthenticated(true);
     setIsLoggedIn(false);
-  }, [
-    allowAnonymous,
-    clientId,
-    scope,
-    customScope,
-    handleLogout,
-  ]);
+  }, [allowAnonymous, clientId, scope, customScope, handleLogout]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -125,33 +125,35 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       isAuthenticated,
       isLoggedIn,
       token,
+      xpSchemas,
       logout: handleLogout,
       login: handleLogin,
       defaultErrorHandler,
     };
   }, [
-    allowAnonymous,
     baseApiUrl,
     clientId,
+    scope,
     customScope,
-    handleLogout,
+    allowAnonymous,
     isAuthenticated,
     isLoggedIn,
+    token,
+    xpSchemas,
+    handleLogout,
     handleLogin,
-    scope,
     defaultErrorHandler,
-    token
   ]);
 
   return (
-      <OrderCloudContext.Provider value={ordercloudContext}>
-        <PersistQueryClientProvider
-          client={queryClient}
-          persistOptions={{ persister: asyncStoragePersister }}
-        >
-          {children}
-        </PersistQueryClientProvider>
-      </OrderCloudContext.Provider>
+    <OrderCloudContext.Provider value={ordercloudContext}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister: asyncStoragePersister }}
+      >
+        {children}
+      </PersistQueryClientProvider>
+    </OrderCloudContext.Provider>
   );
 };
 

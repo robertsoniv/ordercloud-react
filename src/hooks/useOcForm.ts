@@ -5,6 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
 import _, { cloneDeep } from 'lodash'
 import { generateFormSchema, generateParameterSchema, shallowNestedProperties, shapeXpSchema } from '../formSchemaGenerator.utils'
+import { useOrderCloudContext } from '.'
 
 // For specific fields/values we do not want to take the example from Open API spec
 const normalizeExampleValue = (val: any) => {
@@ -36,6 +37,7 @@ export const useOcForm = (
   initialValues: any
 ) => {
   const { saveOperation } = useOperations(resource) as any
+  const { xpSchemas } = useOrderCloudContext()
 
   const requestSchema = useMemo(() => {
     return saveOperation?.requestBody?.content['application/json'].schema
@@ -43,11 +45,17 @@ export const useOcForm = (
   
   const operationParameters = useMemo(()=> generateParameterSchema(saveOperation),[saveOperation])
 
-  const inferredXpSchema = useMemo(()=> {
-    if (initialValues?.body?.xp && Object.keys(initialValues?.body?.xp).length) {
+    /**
+   * If xp schema has been passed into the provider, use the custom schema.
+   * else, infer types from initial values if they exist
+   */
+  const xpSchema = useMemo(()=> {
+    if(xpSchemas?.properties && xpSchemas.properties[resource]){
+      return xpSchemas.properties[resource]
+    } else if (initialValues?.body?.xp && Object.keys(initialValues?.body?.xp).length) {
       return shapeXpSchema([initialValues?.body])
     }
-    },[initialValues])
+    },[initialValues?.body, resource, xpSchemas])
   /**
    * "Shallow up" the requestSchema (removes the 'allOf' layer and puts sub
    * object properties in the right place).
@@ -56,8 +64,8 @@ export const useOcForm = (
     const requiredProps = requestSchema?.required
     const nativeProperties = cloneDeep(requestSchema?.allOf[0].properties)
 
-    if (nativeProperties && nativeProperties.xp && inferredXpSchema) {
-      nativeProperties.xp = inferredXpSchema
+    if (nativeProperties && nativeProperties.xp && xpSchema) {
+      nativeProperties.xp = xpSchema
     }
 
     requiredProps?.forEach((propKey: any) => {
@@ -65,7 +73,7 @@ export const useOcForm = (
     })
 
     return shallowNestedProperties(nativeProperties)
-  }, [inferredXpSchema, requestSchema?.allOf, requestSchema?.required])
+  }, [xpSchema, requestSchema?.allOf, requestSchema?.required])
 
   const getDefaultSchemaValues = useCallback(
     (schema: any, parentPath?: string) => {

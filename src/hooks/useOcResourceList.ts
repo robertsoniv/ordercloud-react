@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios'
 import {
   UseQueryResult,
+  keepPreviousData,
   useMutation,
   useQuery
 } from '@tanstack/react-query'
@@ -39,6 +40,7 @@ export const useOcResourceList = (
         return await axios.get<unknown>(
           url, axiosRequest)
       },
+      placeholderData: keepPreviousData,
     }) as UseQueryResult<RequiredDeep<ListPage<unknown>>, OrderCloudError>;
   };
 

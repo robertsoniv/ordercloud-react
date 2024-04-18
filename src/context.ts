@@ -1,5 +1,6 @@
 import { createContext } from "react";
 import { IOrderCloudContext } from "./models/IOrderCloudContext";
+import { OpenAPIV3 } from "openapi-types";
 
 const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   isAuthenticated: false,
@@ -14,7 +15,8 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   scope: [],
   customScope: [],
   allowAnonymous: false,
-  token: undefined
+  token: undefined,
+  xpSchemas: {} as OpenAPIV3.SchemaObject
 };
 
 export const OrderCloudContext = createContext<IOrderCloudContext>(
