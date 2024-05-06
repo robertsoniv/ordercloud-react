@@ -74,30 +74,42 @@ export const useOcResourceList = (
     export const useMutateOcResource = (
       resource: string,
       parameters?: { [key: string]: string },
-      mutationOptions?: UseMutationOptions
+      mutationOptions?: UseMutationOptions,
+      isNew?: boolean
       ) => {
-      const { saveOperation, getOperation, listOperation } = useOperations(resource)
+      const { createOperation, saveOperation, getOperation, listOperation } = useOperations(resource)
       const { baseApiUrl, token } = useOrderCloudContext()
-      const url = saveOperation?.path ? getRoutingUrl(saveOperation, parameters): ''
-    
+      const operation = isNew ? createOperation : saveOperation
+      const url = operation?.path ? getRoutingUrl(operation, parameters): ''
       const axiosRequest: AxiosRequestConfig = {
-            method: saveOperation? saveOperation.verb.toLocaleLowerCase() : '',
+            method: operation? operation.verb.toLocaleLowerCase() : '',
             baseURL: baseApiUrl + '/v1',
             headers: { Authorization: `Bearer ${token}` },
           }
     
       return useMutation({
-          mutationKey: [saveOperation?.operationId],
-          mutationFn: async (resourceData) => await axios.put<unknown>(
+          mutationKey: [operation?.operationId],
+          mutationFn: async (resourceData) => isNew ? await axios.post<unknown>(
+            url, resourceData, axiosRequest): await axios.put<unknown>(
             url, resourceData, axiosRequest),
           onSuccess: (item: any) => {
             // set GET cache to response of PUT operation
-            queryClient.setQueryData([getOperation?.operationId], item.data)
+            queryClient.setQueryData([getOperation?.operationId, parameters], (oldData: any)=> {
+            return oldData?.data
+                ? {...oldData, data: item.data }
+                : oldData
+            }),
+
             // update list page results for any cache key that matches list operation
-            queryClient.setQueriesData({ queryKey: [listOperation?.operationId]}, (oldData: any) => oldData?.data?.Items
-                ? {...oldData, data: {...oldData.data, Items: oldData.data.Items.map((d: any) => d.ID === item.data?.ID ? item.data : d)}}
-                : oldData)
-            },
+            queryClient.setQueriesData({ queryKey: [listOperation?.operationId]}, (oldData: any) => {
+              const newItems = isNew 
+                ? [...oldData.data.Items, item.data] 
+                : oldData.data.Items.map((d: any) => d.ID === item.data?.ID ? item.data : d)
+                
+              return oldData?.data?.Items
+                  ? {...oldData, data: {...oldData.data, Items: newItems }}
+                  : oldData 
+            })},
             ...mutationOptions
       })
   }
