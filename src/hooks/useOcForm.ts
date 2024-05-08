@@ -33,17 +33,21 @@ const getExampleValue = (row: any, key: string) => {
 
 export const useOcForm = (
   resource: string,
-  parameters: any,
   initialValues: any
 ) => {
-  const { saveOperation } = useOperations(resource) as any
+  const { saveOperation, createOperation } = useOperations(resource) as any
   const { xpSchemas } = useOrderCloudContext()
 
+  const isNew = useMemo(()=> !!initialValues?.body && !Object.keys(initialValues.body).length ,[initialValues.body])
+
   const requestSchema = useMemo(() => {
-    return saveOperation?.requestBody?.content['application/json'].schema
-  }, [saveOperation])
+    return isNew
+    ? createOperation?.requestBody?.content['application/json'].schema 
+    : saveOperation?.requestBody?.content['application/json'].schema
+  }, [createOperation?.requestBody?.content, isNew, saveOperation?.requestBody?.content])
+
   
-  const operationParameters = useMemo(()=> generateParameterSchema(saveOperation),[saveOperation])
+  const operationParameters = useMemo(()=> generateParameterSchema(isNew ? createOperation : saveOperation),[createOperation, isNew, saveOperation])
 
     /**
    * If xp schema has been passed into the provider, use the custom schema.
@@ -99,7 +103,7 @@ export const useOcForm = (
 
     let generatedParamSchema = {}
 
-    if (parameters) {
+    if (operationParameters) {
       generatedParamSchema = generateFormSchema(operationParameters?.schema, operationParameters?.required)
     }
 
@@ -107,13 +111,15 @@ export const useOcForm = (
       parameters: yup.object(generatedParamSchema),
       body: yup.object(generatedSchema),
     })
-  }, [resourceSchema, requestSchema?.required, parameters, operationParameters?.schema, operationParameters?.required])
+  }, [resourceSchema, requestSchema?.required, operationParameters])
 
   // Initiate the react-hook-form
   const methods = useForm({
     defaultValues: {} as any,
     values: {
-      parameters,
+      parameters: {
+        ...initialValues?.parameters,
+      },
       body: {
         ...initialValues?.body,
       },

@@ -20,6 +20,11 @@ const useOperations = (resource: string) => {
    return operationsById[listOperationId]
   }, [operationsById, resource])
 
+  const createOperation = useMemo(() => {
+    const listOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.Create`
+   return operationsById[listOperationId]
+  }, [operationsById, resource])
+
   const deleteOperation = useMemo(() => {
     const listOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.Delete`
    return operationsById[listOperationId]
@@ -30,9 +35,10 @@ const useOperations = (resource: string) => {
       listOperation,
       getOperation,
       saveOperation,
-      deleteOperation
+      deleteOperation,
+      createOperation
     }
-  }, [getOperation, listOperation, saveOperation, deleteOperation])
+  }, [listOperation, getOperation, saveOperation, deleteOperation, createOperation])
 
   return result
 }
