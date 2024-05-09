@@ -1,15 +1,27 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import useApiSpec from './useApiSpec';
 import Case from 'case';
 import { OpenAPIV3 } from 'openapi-types';
 import { useOrderCloudContext } from '.';
+import { sortBy } from 'lodash';
+import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
+import { RequiredDeep } from 'ordercloud-javascript-sdk';
 
-const useColumns = (resourceId: string) => {
+const columnHelper = createColumnHelper<RequiredDeep<unknown>>();
+
+const useColumns = (resourceId: string, cellCallback?: (cellValue: unknown, value: unknown) => unknown, sortOrder?: string[]) => {
   const { xpSchemas } = useOrderCloudContext()
   const { operationsById } = useApiSpec()
   const operationId = `${resourceId.charAt(0).toUpperCase() + Case.camel(resourceId.slice(1))}.List`
 
   const operation = useMemo(() => operationsById[operationId], [operationId, operationsById])
+
+  const sortable = useMemo(() => {
+    const params = operation?.parameters as OpenAPIV3.ParameterObject[]
+    const schema = params?.find((p: OpenAPIV3.ParameterObject) => p?.name === 'sortBy')?.schema as OpenAPIV3.ArraySchemaObject
+    const schemaItems = schema?.items as OpenAPIV3.SchemaObject
+    return schemaItems?.enum
+  }, [operation?.parameters])
 
   const xpProperties = useMemo(() => {
     if(xpSchemas?.properties && xpSchemas.properties[resourceId]){
@@ -37,18 +49,84 @@ const useColumns = (resourceId: string) => {
     return headers
   }, [properties])
 
+  const buildColumns = useCallback((obj: unknown, accessor?: string) => {
+    let cols = [] as any
+    if (!obj || !cellCallback) return cols;
+    Object.entries(obj).forEach(([key, value]: [key: string, value: any]) => {
+      // eslint-disable-next-line no-prototype-builtins
+      const type = value.hasOwnProperty("allOf")
+        ? value["allOf"][0]["type"]
+        : value["type"];
+      const accessorString = accessor ? `${accessor}.${key}` : key;
+  
+      if (type === "object") {
+        // eslint-disable-next-line no-prototype-builtins
+        const properties = value.hasOwnProperty("allOf")
+          ? value["allOf"][0]["properties"]
+          : value["properties"];
+        const nestedColumns = buildColumns(properties, accessorString);
+        if (key === "xp") {
+          cols = [...cols, ...nestedColumns] as ColumnDef<
+            RequiredDeep<unknown>,
+            unknown
+          >[];
+        } else {
+          const groupHeader = accessorString.includes("xp.")
+            ? accessorString
+            : key;
+          if (nestedColumns?.length  && nestedColumns.length > 0) {
+            cols.push(
+              columnHelper.group({
+                header: groupHeader,
+                columns: nestedColumns,
+              })
+            );
+          }
+        }
+      } else {
+        const header =
+          accessorString.includes("xp.") && accessorString.split(".").length === 2
+            ? accessorString
+            : key;
+        cols.push(
+          columnHelper.accessor(accessorString, {
+            id: accessorString,
+            header,
+            enableResizing: true,
+            enableSorting: sortable?.includes(accessorString),
+            cell: (info: any) => {
+              const cellValue = info.getValue();
+              return cellCallback(cellValue, value)
+            }
+          }) as ColumnDef<unknown, unknown>
+        );
+      }
+    });
+  
+    if(sortOrder){
+      return sortBy(cols, (col) => {
+        const sortIndex = sortOrder.indexOf(col?.header as string);
+        if (sortIndex > -1) {
+          return sortIndex;
+        }
+        return sortOrder.length + 1;
+      });
+    } else {
+    return cols}
+  },[cellCallback, sortOrder, sortable]);
+
+  const dynamicColumns = useMemo(()=> {
+   return buildColumns(properties)
+  },[properties, buildColumns])
+
   const result = useMemo(() => {
-    const params = operation?.parameters as OpenAPIV3.ParameterObject[]
-    const schema = params?.find((p: OpenAPIV3.ParameterObject) => p?.name === 'sortBy')?.schema as OpenAPIV3.ArraySchemaObject
-    const schemaItems = schema?.items as OpenAPIV3.SchemaObject
-    const sortable = schemaItems?.enum
     
     return {
       properties,
       columnHeaders,
-      sortable
+      dynamicColumns
     }
-  }, [columnHeaders, operation, properties])
+  }, [columnHeaders, dynamicColumns, properties])
 
   return result
 }
