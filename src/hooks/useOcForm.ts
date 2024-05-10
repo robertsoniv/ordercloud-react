@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import _, { cloneDeep } from 'lodash'
 import { generateFormSchema, generateParameterSchema, shallowNestedProperties, shapeXpSchema } from '../formSchemaGenerator.utils'
 import { useOrderCloudContext } from '.'
+import { OpenAPIV3 } from 'openapi-types'
 
 // For specific fields/values we do not want to take the example from Open API spec
 const normalizeExampleValue = (val: any) => {
@@ -69,15 +70,23 @@ export const useOcForm = (
     const nativeProperties = cloneDeep(requestSchema?.allOf[0].properties)
 
     if (nativeProperties && nativeProperties.xp && xpSchema) {
+      // add necessary required attributes to xp properties
+      if((xpSchemas?.properties?.[resource] as OpenAPIV3.SchemaObject)?.required){
+        (xpSchemas?.properties?.[resource] as OpenAPIV3.SchemaObject)?.required?.forEach((propKey: string) => {
+          (xpSchema as any).properties[propKey]['required'] = true
+          console.log(xpSchema, propKey)
+        })
+      }
       nativeProperties.xp = xpSchema
     }
 
-    requiredProps?.forEach((propKey: any) => {
+    // add required attributes for native properties
+    requiredProps?.forEach((propKey: string) => {
       nativeProperties[propKey].required = true
     })
 
     return shallowNestedProperties(nativeProperties)
-  }, [xpSchema, requestSchema?.allOf, requestSchema?.required])
+  }, [requestSchema?.required, requestSchema?.allOf, xpSchema, xpSchemas?.properties, resource])
 
   const getDefaultSchemaValues = useCallback(
     (schema: any, parentPath?: string) => {

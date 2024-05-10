@@ -9,7 +9,7 @@ import { RequiredDeep } from 'ordercloud-javascript-sdk';
 
 const columnHelper = createColumnHelper<RequiredDeep<unknown>>();
 
-const useColumns = (resourceId: string, cellCallback?: (cellValue: unknown, value: unknown) => unknown, sortOrder?: string[]) => {
+const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (cellValue: unknown, value: unknown) => unknown) => {
   const { xpSchemas } = useOrderCloudContext()
   const { operationsById } = useApiSpec()
   const operationId = `${resourceId.charAt(0).toUpperCase() + Case.camel(resourceId.slice(1))}.List`
@@ -52,7 +52,7 @@ const useColumns = (resourceId: string, cellCallback?: (cellValue: unknown, valu
   const buildColumns = useCallback((obj: unknown, accessor?: string) => {
     let cols = [] as any
     if (!obj || !cellCallback) return cols;
-    Object.entries(obj).forEach(([key, value]: [key: string, value: any]) => {
+    Object.entries(obj).forEach(([key, value]) => {
       // eslint-disable-next-line no-prototype-builtins
       const type = value.hasOwnProperty("allOf")
         ? value["allOf"][0]["type"]
@@ -94,7 +94,7 @@ const useColumns = (resourceId: string, cellCallback?: (cellValue: unknown, valu
             header,
             enableResizing: true,
             enableSorting: sortable?.includes(accessorString),
-            cell: (info: any) => {
+            cell: (info) => {
               const cellValue = info.getValue();
               return cellCallback(cellValue, value)
             }
