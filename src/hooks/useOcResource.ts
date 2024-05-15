@@ -14,11 +14,6 @@ import { queryClient } from '..'
 
 export type ServiceListOptions = { [key: string]: ServiceListOptions | string }
 
-export type ServiceOptions = {
-  parameters?: string[]
-  listOptions?: ServiceListOptions
-}
-
 export const useOcResourceList = (
   resource: string,
   listOptions?: ServiceListOptions,

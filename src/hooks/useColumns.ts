@@ -9,7 +9,7 @@ import { RequiredDeep } from 'ordercloud-javascript-sdk';
 
 const columnHelper = createColumnHelper<RequiredDeep<unknown>>();
 
-const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (cellValue: unknown, value: unknown) => unknown) => {
+const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (cellValue: unknown, properties: OpenAPIV3.SchemaObject) => JSX.Element) => {
   const { xpSchemas } = useOrderCloudContext()
   const { operationsById } = useApiSpec()
   const operationId = `${resourceId.charAt(0).toUpperCase() + Case.camel(resourceId.slice(1))}.List`
@@ -50,6 +50,7 @@ const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (ce
   }, [properties])
 
   const buildColumns = useCallback((obj: unknown, accessor?: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let cols = [] as any
     if (!obj || !cellCallback) return cols;
     Object.entries(obj).forEach(([key, value]) => {

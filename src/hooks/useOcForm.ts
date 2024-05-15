@@ -2,7 +2,7 @@ import useOperations from './useOperations'
 import { useCallback, useMemo } from 'react'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { useForm } from 'react-hook-form'
+import { UseFormProps, useForm } from 'react-hook-form'
 import _, { cloneDeep } from 'lodash'
 import { generateFormSchema, generateParameterSchema, shallowNestedProperties, shapeXpSchema } from '../formSchemaGenerator.utils'
 import { useOrderCloudContext } from '.'
@@ -34,12 +34,13 @@ const getExampleValue = (row: any, key: string) => {
 
 export const useOcForm = (
   resource: string,
-  initialValues: any
+  initialValues?: { parameters?: {[key: string]: unknown}, body?: {[key: string]: unknown} },
+  props?: UseFormProps
 ) => {
   const { saveOperation, createOperation } = useOperations(resource) as any
   const { xpSchemas } = useOrderCloudContext()
 
-  const isNew = useMemo(()=> !!initialValues?.body && !Object.keys(initialValues.body).length ,[initialValues.body])
+  const isNew = useMemo(()=> !initialValues?.body || (!initialValues?.body && !Object.keys(initialValues.body).length) ,[initialValues?.body])
 
   const requestSchema = useMemo(() => {
     return isNew
@@ -74,7 +75,6 @@ export const useOcForm = (
       if((xpSchemas?.properties?.[resource] as OpenAPIV3.SchemaObject)?.required){
         (xpSchemas?.properties?.[resource] as OpenAPIV3.SchemaObject)?.required?.forEach((propKey: string) => {
           (xpSchema as any).properties[propKey]['required'] = true
-          console.log(xpSchema, propKey)
         })
       }
       nativeProperties.xp = xpSchema
@@ -89,9 +89,9 @@ export const useOcForm = (
   }, [requestSchema?.required, requestSchema?.allOf, xpSchema, xpSchemas?.properties, resource])
 
   const getDefaultSchemaValues = useCallback(
-    (schema: any, parentPath?: string) => {
-      let obj = {} as any
-      Object.entries(schema).forEach(([key, value]: [string, any]) => {
+    (schema: OpenAPIV3.SchemaObject, parentPath?: string) => {
+      const obj = {} as {[key: string]: unknown}
+      Object.entries(schema).forEach(([key, value]: [string, OpenAPIV3.SchemaObject]) => {
         if (value.readOnly) return
         if (value?.properties) {
           obj[key] = getDefaultSchemaValues(value.properties, key)
@@ -124,17 +124,18 @@ export const useOcForm = (
 
   // Initiate the react-hook-form
   const methods = useForm({
-    defaultValues: {} as any,
+    defaultValues:  props?.defaultValues || {} as any,
     values: {
       parameters: {
         ...initialValues?.parameters,
       },
       body: {
-        ...initialValues?.body,
+        ...initialValues?.body || {},
       },
     },
     resolver: yupResolver(formSchema!),
-    mode: 'onBlur',
+    mode: props?.mode || 'onBlur',
+    ...props
   })
 
   return {
