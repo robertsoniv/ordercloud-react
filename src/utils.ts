@@ -6,6 +6,13 @@ export const isAnonToken = (token: string) => {
   return !!parsed.orderid;
 };
 
+export const getRoles = (token: string) => {
+  if(!token) return undefined
+  const parsed = jwtDecode<DecodedToken>(token);
+  console.log(parsed)
+  return parsed.role;
+};
+
 export const defaultRetryFn = (failureCount: number, error: unknown) => {
   const { status } = error as OrderCloudError;
   switch (status) {
@@ -89,23 +96,7 @@ export const makeQueryString = (params: ServiceListOptions | undefined) => {
     .join('&')}`
 }
 
-export const mapRequestParameters = (
-  getOperation: any,
-  paramsInPath: any,
-  additionalParams?: string[]
-) => {
-  const paramsObj = {} as any
-  const requiredParams = [...getRequiredParamsInPath(getOperation), ...(additionalParams || [])]
-  requiredParams.forEach((param) => {
-    const matchingParam = paramsInPath[param]
-    if (matchingParam) {
-      paramsObj[param] = matchingParam
-    }
-  })
-  return paramsObj
-}
-
-const getRequiredParamsInPath = (getOperation: any) => {
+export const getRequiredParamsInPath = (getOperation: any) => {
   const result =
     getOperation && getOperation?.parameters
       ? getOperation.parameters.filter((p: any) => p.in === 'path' && p.required).map((p: any) => p.name)

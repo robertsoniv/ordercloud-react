@@ -5,7 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { UseFormProps, useForm } from 'react-hook-form'
 import _, { cloneDeep } from 'lodash'
 import { generateFormSchema, generateParameterSchema, shallowNestedProperties, shapeXpSchema } from '../formSchemaGenerator.utils'
-import { useOrderCloudContext } from '.'
+import { useHasAccess, useOrderCloudContext } from '.'
 import { OpenAPIV3 } from 'openapi-types'
 
 // For specific fields/values we do not want to take the example from Open API spec
@@ -35,21 +35,25 @@ const getExampleValue = (row: any, key: string) => {
 export const useOcForm = (
   resource: string,
   initialValues?: { parameters?: {[key: string]: unknown}, body?: {[key: string]: unknown} },
-  props?: UseFormProps
+  props?: UseFormProps,
+  isAssignment?: boolean,
+  inclusion?: string
 ) => {
-  const { saveOperation, createOperation } = useOperations(resource) as any
+  const { saveOperation, createOperation, assignmentSaveOperation } = useOperations(resource, inclusion) as any
   const { xpSchemas } = useOrderCloudContext()
 
   const isNew = useMemo(()=> !initialValues?.body || (!initialValues?.body && !Object.keys(initialValues.body).length) ,[initialValues?.body])
 
   const requestSchema = useMemo(() => {
-    return isNew
+    const schema = isAssignment ? assignmentSaveOperation?.requestBody?.content['application/json'].schema : isNew
     ? createOperation?.requestBody?.content['application/json'].schema 
     : saveOperation?.requestBody?.content['application/json'].schema
-  }, [createOperation?.requestBody?.content, isNew, saveOperation?.requestBody?.content])
+    
+    return schema ?? createOperation?.requestBody?.content['application/json'].schema  // fallback
+  }, [assignmentSaveOperation?.requestBody?.content, createOperation?.requestBody?.content, isAssignment, isNew, saveOperation?.requestBody?.content])
 
   
-  const operationParameters = useMemo(()=> generateParameterSchema(isNew ? createOperation : saveOperation),[createOperation, isNew, saveOperation])
+  const operationParameters = useMemo(()=> generateParameterSchema(isAssignment ? assignmentSaveOperation : isNew ? createOperation : saveOperation),[assignmentSaveOperation, createOperation, isAssignment, isNew, saveOperation])
 
     /**
    * If xp schema has been passed into the provider, use the custom schema.
@@ -105,6 +109,8 @@ export const useOcForm = (
     [requestSchema?.allOf]
   )
 
+  const { isAdmin } = useHasAccess([], resource)
+
   // Generate the form schema using Yup
   const formSchema = useMemo(() => {
     if (!resourceSchema) return
@@ -140,6 +146,7 @@ export const useOcForm = (
 
   return {
     methods,
-    resourceSchema
+    resourceSchema,
+    canEdit: isAdmin
   }
   };

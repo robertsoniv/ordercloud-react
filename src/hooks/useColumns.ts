@@ -6,15 +6,18 @@ import { useOrderCloudContext } from '.';
 import { sortBy } from 'lodash';
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import { RequiredDeep } from 'ordercloud-javascript-sdk';
+import { getRequiredParamsInPath } from '../utils';
 
 const columnHelper = createColumnHelper<RequiredDeep<unknown>>();
 
 const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (cellValue: unknown, properties: OpenAPIV3.SchemaObject) => JSX.Element) => {
   const { xpSchemas } = useOrderCloudContext()
   const { operationsById } = useApiSpec()
-  const operationId = `${resourceId.charAt(0).toUpperCase() + Case.camel(resourceId.slice(1))}.List`
+  const listOperationId = `${resourceId.charAt(0).toUpperCase() + Case.camel(resourceId.slice(1))}.List`
+  const deleteOperationId = `${resourceId.charAt(0).toUpperCase() + Case.camel(resourceId.slice(1))}.Delete`
 
-  const operation = useMemo(() => operationsById[operationId], [operationId, operationsById])
+  const operation = useMemo(() => operationsById[listOperationId], [listOperationId, operationsById])
+  const deleteOperation = useMemo(() => operationsById[deleteOperationId], [deleteOperationId, operationsById])
 
   const sortable = useMemo(() => {
     const params = operation?.parameters as OpenAPIV3.ParameterObject[]
@@ -103,7 +106,7 @@ const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (ce
         );
       }
     });
-  
+
     if(sortOrder){
       return sortBy(cols, (col) => {
         const sortIndex = sortOrder.indexOf(col?.header as string);
@@ -120,14 +123,19 @@ const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (ce
    return buildColumns(properties)
   },[properties, buildColumns])
 
+  const requiredParameters = useMemo(()=> {
+    return getRequiredParamsInPath(deleteOperation)
+  }, [deleteOperation])
+
   const result = useMemo(() => {
     
     return {
       properties,
+      requiredParameters,
       columnHeaders,
       dynamicColumns
     }
-  }, [columnHeaders, dynamicColumns, properties])
+  }, [columnHeaders, dynamicColumns, properties, requiredParameters])
 
   return result
 }
