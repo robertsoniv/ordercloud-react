@@ -9,7 +9,6 @@ export const isAnonToken = (token: string) => {
 export const getRoles = (token: string) => {
   if(!token) return undefined
   const parsed = jwtDecode<DecodedToken>(token);
-  console.log(parsed)
   return parsed.role;
 };
 

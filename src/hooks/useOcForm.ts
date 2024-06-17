@@ -5,7 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { UseFormProps, useForm } from 'react-hook-form'
 import _, { cloneDeep } from 'lodash'
 import { generateFormSchema, generateParameterSchema, shallowNestedProperties, shapeXpSchema } from '../formSchemaGenerator.utils'
-import { useHasAccess, useOrderCloudContext } from '.'
+import { useOrderCloudContext } from '.'
 import { OpenAPIV3 } from 'openapi-types'
 
 // For specific fields/values we do not want to take the example from Open API spec
@@ -35,9 +35,9 @@ const getExampleValue = (row: any, key: string) => {
 export const useOcForm = (
   resource: string,
   initialValues?: { parameters?: {[key: string]: unknown}, body?: {[key: string]: unknown} },
-  props?: UseFormProps,
   isAssignment?: boolean,
-  inclusion?: string
+  inclusion?: string,
+  props?: UseFormProps,
 ) => {
   const { saveOperation, createOperation, assignmentSaveOperation } = useOperations(resource, inclusion) as any
   const { xpSchemas } = useOrderCloudContext()
@@ -109,8 +109,6 @@ export const useOcForm = (
     [requestSchema?.allOf]
   )
 
-  const { isAdmin } = useHasAccess([], resource)
-
   // Generate the form schema using Yup
   const formSchema = useMemo(() => {
     if (!resourceSchema) return
@@ -146,7 +144,6 @@ export const useOcForm = (
 
   return {
     methods,
-    resourceSchema,
-    canEdit: isAdmin
+    resourceSchema
   }
   };
