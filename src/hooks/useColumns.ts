@@ -1,20 +1,17 @@
 import { useCallback, useMemo } from 'react'
-import useApiSpec from './useApiSpec';
-import Case from 'case';
 import { OpenAPIV3 } from 'openapi-types';
 import { useOrderCloudContext } from '.';
 import { sortBy } from 'lodash';
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import { RequiredDeep } from 'ordercloud-javascript-sdk';
+import { getRequiredParamsInPath } from '../utils';
+import useOperations from './useOperations';
 
 const columnHelper = createColumnHelper<RequiredDeep<unknown>>();
 
 const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (cellValue: unknown, properties: OpenAPIV3.SchemaObject) => JSX.Element) => {
   const { xpSchemas } = useOrderCloudContext()
-  const { operationsById } = useApiSpec()
-  const operationId = `${resourceId.charAt(0).toUpperCase() + Case.camel(resourceId.slice(1))}.List`
-
-  const operation = useMemo(() => operationsById[operationId], [operationId, operationsById])
+  const { listOperation: operation, deleteOperation, assignmentListOperation} = useOperations(resourceId)
 
   const sortable = useMemo(() => {
     const params = operation?.parameters as OpenAPIV3.ParameterObject[]
@@ -103,7 +100,7 @@ const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (ce
         );
       }
     });
-  
+
     if(sortOrder){
       return sortBy(cols, (col) => {
         const sortIndex = sortOrder.indexOf(col?.header as string);
@@ -120,14 +117,29 @@ const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (ce
    return buildColumns(properties)
   },[properties, buildColumns])
 
+  const requiredParameters = useMemo(()=> {
+    return getRequiredParamsInPath(deleteOperation)
+  }, [deleteOperation])
+
+  const assignmentProperties = useMemo(()=> {
+    const response = assignmentListOperation?.responses['200'] as OpenAPIV3.ResponseObject
+    const schema = response?.content?.['application/json']?.schema as OpenAPIV3.SchemaObject
+    const schemaItemArray = schema?.properties?.Items as OpenAPIV3.ArraySchemaObject
+    const schemaObj = schemaItemArray?.items as OpenAPIV3.SchemaObject
+
+    return schemaObj?.properties
+  }, [assignmentListOperation?.responses])
+
   const result = useMemo(() => {
     
     return {
       properties,
+      assignmentProperties,
+      requiredParameters,
       columnHeaders,
       dynamicColumns
     }
-  }, [columnHeaders, dynamicColumns, properties])
+  }, [assignmentProperties, columnHeaders, dynamicColumns, properties, requiredParameters])
 
   return result
 }

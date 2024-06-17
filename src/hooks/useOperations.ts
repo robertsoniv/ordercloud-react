@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import useApiSpec from './useApiSpec';
 import Case from 'case';
 
-const useOperations = (resource: string) => {
+const useOperations = (resource: string, inclusion?: string) => {
   const { operationsById } = useApiSpec()
   
   const listOperation = useMemo(() => {
@@ -30,15 +30,33 @@ const useOperations = (resource: string) => {
    return operationsById[listOperationId]
   }, [operationsById, resource])
 
+  const assignmentListOperation = useMemo(() => {
+    const assignmentListOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.List${inclusion ?? "" }Assignments`
+   return operationsById[assignmentListOperationId]
+  }, [inclusion, operationsById, resource])
+
+  const assignmentSaveOperation = useMemo(() => {
+    const assignmentSaveOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.Save${inclusion ?? "" }Assignment`
+   return operationsById[assignmentSaveOperationId]
+  }, [inclusion, operationsById, resource])
+
+  const assignmentDeleteOperation = useMemo(() => {
+    const assignmentDeleteOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.Delete${inclusion ?? "" }Assignment`
+   return operationsById[assignmentDeleteOperationId]
+  }, [inclusion, operationsById, resource])
+
   const result = useMemo(() => {    
     return {
       listOperation,
       getOperation,
       saveOperation,
       deleteOperation,
-      createOperation
+      createOperation,
+      assignmentListOperation,
+      assignmentSaveOperation,
+      assignmentDeleteOperation
     }
-  }, [listOperation, getOperation, saveOperation, deleteOperation, createOperation])
+  }, [listOperation, getOperation, saveOperation, deleteOperation, createOperation, assignmentListOperation, assignmentSaveOperation, assignmentDeleteOperation])
 
   return result
 }

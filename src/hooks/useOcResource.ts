@@ -7,19 +7,19 @@ import {
   useQuery
 } from '@tanstack/react-query'
 import { RequiredDeep, ListPage, OrderCloudError } from 'ordercloud-javascript-sdk'
-import { getRoutingUrl, makeQueryString } from '../utils'
+import { getRoutingUrl, isRouteParam, makeQueryString } from '../utils'
 import { useColumns, useOrderCloudContext } from '.'
 import useOperations from './useOperations'
 import { queryClient } from '..'
 
 export type ServiceListOptions = { [key: string]: ServiceListOptions | string }
 
-export const useOcResourceList = (
+export function useOcResourceList<TData>(
   resource: string,
   listOptions?: ServiceListOptions,
   parameters?: { [key: string]: string },
-  queryOptions?: UseQueryOptions 
-) => {
+  queryOptions?: Omit<UseQueryOptions, 'queryKey'>
+) {
   const { listOperation } = useOperations(resource)
   const queryString = makeQueryString(listOptions)
   const { baseApiUrl, token } = useOrderCloudContext()
@@ -34,18 +34,19 @@ export const useOcResourceList = (
     return useQuery({
       queryKey: [listOperation?.operationId, listOptions, parameters],
       queryFn: async () => {
-        return await axios.get<unknown>(
+        const resp = await axios.get<TData>(
           url, axiosRequest)
+          return resp.data
       },
       ...queryOptions
-    }) as UseQueryResult<RequiredDeep<ListPage<unknown>>, OrderCloudError>;
-  };
+    }) as UseQueryResult<RequiredDeep<ListPage<TData>>, OrderCloudError>;
+  }
 
-  export const useOcResourceGet = (
+  export function useOcResourceGet<TData> (
     resource: string,
     parameters?: { [key: string]: string },
-    queryOptions?: UseQueryOptions 
-  ) => {
+    queryOptions?: Omit<UseQueryOptions, 'queryKey'>
+  ){
     const { getOperation } = useOperations(resource)
     const { baseApiUrl, token } = useOrderCloudContext()
     const url = getOperation?.path ? getRoutingUrl(getOperation, parameters): ''
@@ -59,19 +60,20 @@ export const useOcResourceList = (
       return useQuery({
         queryKey: [getOperation?.operationId, parameters],
         queryFn: async () => {
-          return await axios.get<unknown>(
+          const resp = await axios.get<TData>(
             url, axiosRequest)
+            return resp.data
         },
         ...queryOptions
-      }) as UseQueryResult<RequiredDeep<unknown>, OrderCloudError>;
-    };
+      }) as UseQueryResult<RequiredDeep<TData>, OrderCloudError>;
+    }
 
-    export const useMutateOcResource = (
+    export function useMutateOcResource<TData>(
       resource: string,
       parameters?: { [key: string]: string },
-      mutationOptions?: UseMutationOptions,
+      mutationOptions?: Omit<UseMutationOptions, 'mutationKey'>,
       isNew?: boolean
-      ) => {
+      ) {
       const { createOperation, saveOperation, getOperation, listOperation } = useOperations(resource)
       const { baseApiUrl, token } = useOrderCloudContext()
       const operation = isNew ? createOperation : saveOperation
@@ -84,22 +86,25 @@ export const useOcResourceList = (
     
       return useMutation({
           mutationKey: [operation?.operationId],
-          mutationFn: async (resourceData) => isNew ? await axios.post<unknown>(
-            url, resourceData, axiosRequest): await axios.put<unknown>(
-            url, resourceData, axiosRequest),
+          mutationFn: async (resourceData) => {
+            const resp = isNew 
+            ? await axios.post<TData>(url, resourceData, axiosRequest)
+            : await axios.put<TData>(url, resourceData, axiosRequest)
+              return resp.data
+            },
           onSuccess: (item: any) => {
             // set GET cache to response of PUT operation
             queryClient.setQueryData([getOperation?.operationId, parameters], (oldData: any)=> {
-            return oldData?.data
-                ? {...oldData, data: item.data }
+            return oldData
+                ? {...oldData, data: item }
                 : oldData
             }),
 
             // update list page results for any cache key that matches list operation
             queryClient.setQueriesData({ queryKey: [listOperation?.operationId]}, (oldData: any) => {
               const newItems = isNew 
-                ? [...oldData.data.Items, item.data] 
-                : oldData.data.Items.map((d: any) => d.ID === item.data?.ID ? item.data : d)
+                ? [...oldData.data.Items, item] 
+                : oldData.data.Items.map((d: any) => d.ID === item?.ID ? item : d)
                 
               return oldData?.data?.Items
                   ? {...oldData, data: {...oldData.data, Items: newItems }}
@@ -109,11 +114,11 @@ export const useOcResourceList = (
       })
   }
 
-  export const useDeleteOcResource = (
+  export function useDeleteOcResource<TData>(
     resource: string,
     parameters?: { [key: string]: string },
-    mutationOptions?: UseMutationOptions
-    ) => {
+    mutationOptions?: Omit<UseMutationOptions, 'mutationKey'>
+    ){
     const { deleteOperation, listOperation } = useOperations(resource)
     const { columnHeaders } = useColumns(resource)
     const { baseApiUrl, token } = useOrderCloudContext()
@@ -127,8 +132,11 @@ export const useOcResourceList = (
   
     return useMutation({
         mutationKey: [deleteOperation?.operationId],
-        mutationFn: async () => await axios.delete<unknown>(
-          url, axiosRequest),
+        mutationFn: async () => {
+          const resp = await axios.delete<TData>(
+          url, axiosRequest)
+          return resp.data
+        },
         onSuccess: () => {
           if(columnHeaders?.includes('ID')){
             const resourceID = url.split('/').pop()
@@ -142,4 +150,104 @@ export const useOcResourceList = (
         },
         ...mutationOptions
     })
+}
+
+export function useListAssignments<TData>(
+  resource: string,
+  inclusion?: string,
+  listOptions?: ServiceListOptions,
+  parameters?: { [key: string]: string },
+  queryOptions?: Omit<UseQueryOptions, 'queryKey'> 
+  ){
+   const { assignmentListOperation } = useOperations(resource, inclusion)
+   const queryString = makeQueryString(listOptions)
+   const { baseApiUrl, token } = useOrderCloudContext()
+   const url = assignmentListOperation?.path ? getRoutingUrl(assignmentListOperation, parameters) + (queryString ? `?${queryString}` : '') : ''
+
+   const axiosRequest: AxiosRequestConfig = {
+        method: assignmentListOperation? assignmentListOperation.verb.toLocaleLowerCase() : '',
+        baseURL: baseApiUrl + '/v1',
+        headers: { Authorization: `Bearer ${token}` },
+      }
+
+    return useQuery({
+      queryKey: [assignmentListOperation?.operationId, listOptions, parameters],
+      queryFn: async () => {
+        const resp = await axios.get<TData>(
+          url, axiosRequest)
+          return resp.data
+      },
+      ...queryOptions
+    }) as UseQueryResult<RequiredDeep<ListPage<TData>>, OrderCloudError>;
+}
+
+export function useMutateAssignment<TData> (
+  resource: string,
+  inclusion?: string,
+  parameters?: { [key: string]: string },
+  mutationOptions?: Omit<UseMutationOptions, 'mutationKey'>
+  ) {
+  const { assignmentSaveOperation, assignmentListOperation } = useOperations(resource, inclusion)
+
+  const { baseApiUrl, token } = useOrderCloudContext()
+  const url = assignmentSaveOperation?.path ? getRoutingUrl(assignmentSaveOperation, parameters): ''
+  const axiosRequest: AxiosRequestConfig = {
+        method: assignmentSaveOperation ? assignmentSaveOperation.verb.toLocaleLowerCase() : '',
+        baseURL: baseApiUrl + '/v1',
+        headers: { Authorization: `Bearer ${token}` },
+      }
+
+  return useMutation({
+      mutationKey: [assignmentSaveOperation?.operationId],
+      mutationFn: async (resourceData: unknown) => {
+        const resp = await axios.post<TData>(
+        url, resourceData, axiosRequest)
+        return resp.data
+        },
+      onSuccess: () => {
+        // invalidate cache for list assignment operations that match query key
+        queryClient.invalidateQueries({ queryKey: [assignmentListOperation?.operationId]})}, 
+        ...mutationOptions
+  })
+}
+
+export function useDeleteAssignment<TData = unknown> (
+  resource: string,
+  inclusion?: string,
+  parameters?: { [key: string]: string },
+  mutationOptions?: Omit<UseMutationOptions, 'mutationKey'>
+  ) {
+  const { assignmentDeleteOperation, assignmentListOperation } = useOperations(resource, inclusion)
+  const { baseApiUrl, token } = useOrderCloudContext()
+  let queryString
+  if(parameters){
+    const queryParams = {} as { [key: string]: string };
+    Object.entries(parameters).forEach(([key, value]: [string, string]) => {
+      if(!isRouteParam(assignmentDeleteOperation, key)){
+        queryParams[key] = value
+      }}
+    )
+    queryString = makeQueryString(queryParams)
+  }
+  const url = assignmentDeleteOperation?.path ? getRoutingUrl(assignmentDeleteOperation, parameters) + (queryString ? `?${queryString}` : ''): ''
+
+  const axiosRequest: AxiosRequestConfig = {
+        method: assignmentDeleteOperation? assignmentDeleteOperation.verb.toLocaleLowerCase() : '',
+        baseURL: baseApiUrl + '/v1',
+        headers: { Authorization: `Bearer ${token}` },
+      }
+
+  return useMutation({
+      mutationKey: [assignmentDeleteOperation?.operationId],
+      mutationFn: async () => {
+        const resp = await axios.delete<TData>(
+        url, axiosRequest)
+        return resp.data
+      },
+      onSuccess: () => {
+        // invalidate cache for list assignment operations that match query key
+        queryClient.invalidateQueries({ queryKey: [assignmentListOperation?.operationId]})
+      },
+      ...mutationOptions
+  })
 }
