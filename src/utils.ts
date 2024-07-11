@@ -1,5 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import { DecodedToken, OrderCloudError } from "ordercloud-javascript-sdk";
+import { ServiceListOptions } from "./hooks/useOcResource";
 
 export const isAnonToken = (token: string) => {
   const parsed = jwtDecode<DecodedToken>(token);
@@ -51,8 +52,6 @@ export const getRoutingUrl = (operation: any, params: any)=> {
   }
   return url
 }
-
-type ServiceListOptions = { [key: string]: ServiceListOptions | string }
 
 export const makeQueryString = (params: ServiceListOptions | undefined) => {
   if(!params) return

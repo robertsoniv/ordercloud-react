@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios'
 import {
   UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
   useMutation,
@@ -12,7 +13,7 @@ import { useColumns, useOrderCloudContext } from '.'
 import useOperations from './useOperations'
 import { queryClient } from '..'
 
-export type ServiceListOptions = { [key: string]: ServiceListOptions | string }
+export type ServiceListOptions = { [key: string]: ServiceListOptions | string | undefined }
 
 export function useOcResourceList<TData>(
   resource: string,
@@ -94,24 +95,24 @@ export function useOcResourceList<TData>(
             },
           onSuccess: (item: any) => {
             // set GET cache to response of PUT operation
-            queryClient.setQueryData([getOperation?.operationId, parameters], (oldData: any)=> {
+            queryClient.setQueryData([getOperation?.operationId, parameters], (oldData: TData)=> {
             return oldData
-                ? {...oldData, data: item }
+                ? item
                 : oldData
             }),
 
             // update list page results for any cache key that matches list operation
-            queryClient.setQueriesData({ queryKey: [listOperation?.operationId]}, (oldData: any) => {
+            queryClient.setQueriesData({ queryKey: [listOperation?.operationId]}, (oldData: RequiredDeep<ListPage<TData>> | undefined) => {
+              if(!oldData?.Items) return oldData
+
               const newItems = isNew 
-                ? [...oldData.data.Items, item] 
-                : oldData.data.Items.map((d: any) => d.ID === item?.ID ? item : d)
+                ? [...oldData.Items, item] 
+                : oldData.Items.map((d: any) => d.ID === item?.ID ? item : d)
                 
-              return oldData?.data?.Items
-                  ? {...oldData, data: {...oldData.data, Items: newItems }}
-                  : oldData 
+              return { ...oldData, Items: newItems}
             })},
             ...mutationOptions
-      })
+      }) as UseMutationResult<RequiredDeep<TData>, OrderCloudError>;
   }
 
   export function useDeleteOcResource<TData>(
@@ -141,15 +142,15 @@ export function useOcResourceList<TData>(
           if(columnHeaders?.includes('ID')){
             const resourceID = url.split('/').pop()
             // remove item from list page results for any cache key that matches list operation
-            queryClient.setQueriesData({ queryKey: [listOperation?.operationId]}, (oldData: any) => {
-              return oldData?.data?.Items
-                ? {...oldData, data: {...oldData.data, Items: oldData.data.Items.filter((d: any) => d.ID !== resourceID)}}
+            queryClient.setQueriesData({ queryKey: [listOperation?.operationId]}, (oldData: RequiredDeep<ListPage<TData>> | undefined) => {
+              return oldData?.Items
+                ? {...oldData, Items: oldData.Items.filter((d: any) => d.ID !== resourceID)}
                 : oldData
             })
           }
         },
         ...mutationOptions
-    })
+    }) as UseMutationResult<void, OrderCloudError>;
 }
 
 export function useListAssignments<TData>(
@@ -208,8 +209,8 @@ export function useMutateAssignment<TData> (
         // invalidate cache for list assignment operations that match query key
         queryClient.invalidateQueries({ queryKey: [assignmentListOperation?.operationId]})}, 
         ...mutationOptions
-  })
-}
+  }) as UseMutationResult<void, OrderCloudError>;
+} 
 
 export function useDeleteAssignment<TData = unknown> (
   resource: string,
@@ -249,5 +250,5 @@ export function useDeleteAssignment<TData = unknown> (
         queryClient.invalidateQueries({ queryKey: [assignmentListOperation?.operationId]})
       },
       ...mutationOptions
-  })
+  }) as UseMutationResult<void, OrderCloudError>;
 }
