@@ -4,6 +4,7 @@ import { OpenAPIV3 } from 'openapi-types'
 import { keyBy, mapValues, values, flatten } from 'lodash'
 import Case from 'case'
 import { IOrderCloudOperationObject, useOrderCloudContext } from '..'
+import { useQuery } from '@tanstack/react-query'
 
 /**
  * PsuedoResources are meant for grouping together a set of duplicate operations for a given path array
@@ -149,16 +150,23 @@ const useApiSpec = () => {
     setSpec(v3doc)
   }, [])
 
+ const specEnv = useQuery({
+      queryKey: ['env'],
+      queryFn: async () => {
+        const env = await fetch(`${baseApiUrl}/env`)
+        return await env.json()
+      },
+      staleTime: 300000
+    })
+
   const validateSpecVersion = useCallback(
     async (url: string, version: string) => {
-      const result = await fetch(`${url}/env`)
-      const resultJson = await result.json()
-      if (resultJson.BuildNumber && resultJson.BuildNumber !== version) {
-        console.log(`Current spec (v${version}) is outdated, updating to ${resultJson.BuildNumber}`)
+      if (specEnv?.data?.BuildNumber && specEnv.data.BuildNumber !== version) {
+        console.log(`Current spec (v${version}) is outdated, updating to ${specEnv.data.BuildNumber}`)
         retrieveSpec(url)
       }
     },
-    [retrieveSpec]
+    [specEnv?.data?.BuildNumber, retrieveSpec]
   )
 
   useEffect(() => {
