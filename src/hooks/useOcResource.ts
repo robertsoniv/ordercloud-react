@@ -155,12 +155,12 @@ export function useOcResourceList<TData>(
 
 export function useListAssignments<TData>(
   resource: string,
-  inclusion?: string,
+  operationInclusion?: string,
   listOptions?: ServiceListOptions,
   parameters?: { [key: string]: string },
   queryOptions?: Omit<UseQueryOptions, 'queryKey'> 
   ){
-   const { assignmentListOperation } = useOperations(resource, inclusion)
+   const { assignmentListOperation } = useOperations(resource, operationInclusion)
    const queryString = makeQueryString(listOptions)
    const { baseApiUrl, token } = useOrderCloudContext()
    const url = assignmentListOperation?.path ? getRoutingUrl(assignmentListOperation, parameters) + (queryString ? `?${queryString}` : '') : ''
@@ -184,11 +184,11 @@ export function useListAssignments<TData>(
 
 export function useMutateAssignment<TData> (
   resource: string,
-  inclusion?: string,
+  operationInclusion?: string,
   parameters?: { [key: string]: string },
   mutationOptions?: Omit<UseMutationOptions, 'mutationKey'>
   ) {
-  const { assignmentSaveOperation, assignmentListOperation } = useOperations(resource, inclusion)
+  const { assignmentSaveOperation, assignmentListOperation } = useOperations(resource, operationInclusion)
 
   const { baseApiUrl, token } = useOrderCloudContext()
   const url = assignmentSaveOperation?.path ? getRoutingUrl(assignmentSaveOperation, parameters): ''
@@ -214,11 +214,11 @@ export function useMutateAssignment<TData> (
 
 export function useDeleteAssignment<TData = unknown> (
   resource: string,
-  inclusion?: string,
+  operationInclusion?: string,
   parameters?: { [key: string]: string },
   mutationOptions?: Omit<UseMutationOptions, 'mutationKey'>
   ) {
-  const { assignmentDeleteOperation, assignmentListOperation } = useOperations(resource, inclusion)
+  const { assignmentDeleteOperation, assignmentListOperation } = useOperations(resource, operationInclusion)
   const { baseApiUrl, token } = useOrderCloudContext()
   let queryString
   if(parameters){

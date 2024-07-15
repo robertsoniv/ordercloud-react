@@ -123,12 +123,11 @@ An **optional** `UseQueryOptions` object.  It is recommended to use a `staleTime
 ### Usage
 Here is an example of using the `useOcResourceList` hook to create a `UseQueryResult` for modifying the current user. 
 ```tsx
-import { Me, MeUser, OrderCloudError, RequiredDeep } from "ordercloud-javascript-sdk";
 import { useOcResourceList } from "@rwatt451/ordercloud-react";
 
   const dataQuery = useOcResourceList('Orders', { IsSubmitted: true }, { direction: 'Incoming' }, {
     staleTime: 300000, // 5 min
-  }) as UseQueryResult<RequiredDeep<unknown>, OrderCloudError>;
+  })
 ```
 
 ## `useOcResourceGet()` hook
@@ -148,12 +147,11 @@ An **optional** `UseQueryOptions` object.  It is recommended to use a `staleTime
 ### Usage
 Here is an example of using the `useOcResourceGet` hook to create a `UseQueryResult` for modifying the current user. 
 ```tsx
-import { Me, MeUser, OrderCloudError, RequiredDeep } from "ordercloud-javascript-sdk";
 import { useOcResourceGet } from "@rwatt451/ordercloud-react";
 
   const dataQuery = useOcResourceGet('Catalogs', { buyerID: 'BuyerA' }, {
     staleTime: 'Infinity',
-  }) as UseQueryResult<RequiredDeep<unknown>, OrderCloudError>;
+  })
 ```
 
 ## `useMutateOcResource()` hook
@@ -204,12 +202,108 @@ An **optional** parameters object for the OrderCloud delete call.
 An **optional** `UseMutationOptions` object. 
 
 ### Usage
-Here is an example of using the `useMutateOcResource` hook to create a `UseMutationResult` for modifying the current user. 
+Here is an example of using the `useDeleteOcResource` hook to create a `UseMutationResult` for modifying the current user. 
 ```tsx
 import { useDeleteOcResource } from "@rwatt451/ordercloud-react";
 import { useCallback } from "react";
 
   const { mutateAsync: deleteAsync } = useDeleteOcResource('Orders', { direction: 'Outgoing' })
+  
+  const onDelete = useCallback(
+    async (values: any) => {
+      await deleteAsync();
+    },
+    [saveAsync]
+  );
+```
+
+## `useListAssignments()` hook
+Returns an OrderCloud resource delete query result from the resource Delete operation defined on the OrderCloud OpenAPI spec. This hook supports all of the normal `UseMutationOptions` documented by Tanstack. Ultimately this hook will return the same `UseMutationResult` that is documented on Tanstack query.
+
+### Options
+
+#### **resource**: `string`
+The name of the OrderCloud resource to make a list call with.
+
+#### **operationInclusion**: `string`
+Optional string to be included in the resource operation name. ex. List{User}Assignments
+
+#### **listOptions**: `ServiceListOptions`
+An **optional** listOptions object for the OrderCloud list call.
+
+#### **parameters**: `{ [key: string]: string }`
+An **optional** parameters object for the OrderCloud list call.
+
+#### **queryOptions**: `UseQueryOptions`
+An **optional** `UseQueryOptions` object.  It is recommended to use a `staleTime` value .
+
+### Usage
+Here is an example of using the `useListAssignments` hook to create a `UseQueryResult` for modifying the current user. 
+```tsx
+import { useOcResourceList } from "@rwatt451/ordercloud-react";
+
+  const dataQuery = useListAssignments('Catalogs', { ID: '100|101|102' }, {
+    staleTime: 300000, // 5 min
+  })
+```
+
+## `useMutateAssignment()` hook
+Returns an OrderCloud resource save assignment query result from the resource SaveAssignment operation defined on the OrderCloud OpenAPI spec. This hook supports all of the normal `UseMutationOptions` documented by Tanstack. Ultimately this hook will return the same `UseMutationResult` that is documented on Tanstack query.
+
+### Options
+
+#### **resource**: `string`
+The name of the OrderCloud resource to make a list call with.
+
+#### **operationInclusion**: `string`
+Optional string to be included in the resource operation name. ex. Save{User}Assignments
+
+#### **parameters**: `{ [key: string]: string }`
+An **optional** parameters object for the OrderCloud list call.
+
+#### **mutationOptions**: `UseMutationOptions`
+An **optional** `UseMutationOptions` object. 
+
+### Usage
+Here is an example of using the `useMutateAssignment` hook to create a `UseMutationResult` for modifying the current user. 
+```tsx
+import { useMutateAssignment } from "@rwatt451/ordercloud-react";
+import { useCallback } from "react";
+
+  const { mutateAsync: saveAssignmentAsync } = useMutateAssignment('Categories', { catalogID: 'DefaultCatalog', categoryID: 'SoftGoods' })
+  
+  const onDelete = useCallback(
+    async (values: any) => {
+      await saveAssignmentAsync();
+    },
+    [saveAsync]
+  );
+```
+
+## `useDeleteAssignment()` hook
+Returns an OrderCloud resource assignment delete query result from the resource DeleteAssignment operation defined on the OrderCloud OpenAPI spec. This hook supports all of the normal `UseMutationOptions` documented by Tanstack. Ultimately this hook will return the same `UseMutationResult` that is documented on Tanstack query.
+
+### Options
+
+#### **resource**: `string`
+The name of the OrderCloud resource to make a delete call with.
+
+#### **operationInclusion**: `string`
+Optional string to be included in the resource operation name. ex. Delete{User}Assignment
+
+#### **parameters**: `{ [key: string]: string }`
+An **optional** parameters object for the OrderCloud delete call.
+
+#### **mutationOptions**: `UseMutationOptions`
+An **optional** `UseMutationOptions` object. 
+
+### Usage
+Here is an example of using the `useDeleteAssignment` hook to create a `UseMutationResult` for modifying the current user. 
+```tsx
+import { useDeleteAssignment } from "@rwatt451/ordercloud-react";
+import { useCallback } from "react";
+
+  const { mutateAsync: deleteAsync } = useDeleteAssignment('Categories', { catalogID: 'DefaultCatalog', categoryID: 'SoftGoods' })
   
   const onDelete = useCallback(
     async (values: any) => {
@@ -246,6 +340,15 @@ An **optional** object that contains initial parameter and body values for an it
 
 #### **props**: `UseFormProps`
 An **optional** `react-hook-form` `useForm` props object 
+
+## `useHasAccess()` hook
+This hook determines whether a user has read or admin access to an OrderCloud resource by comparing the user's token and application scope to the OAuth roles indicated on the OpenAPI spec.
+
+### Options
+
+#### **resource**: `string`
+The OrderCloud resource name used for generating column information.
+
 
 ## Important Notes
 While it is not necessary to use the actual OrderCloud SDK to communicate with the OrderCloud API, it definitely makes things easier. The `isAuthenticated` state is based on the returned value of SDKs `Tokens.GetValidToken()` method and the OrderCloud SDK `Configuration` object is set up using the values passed into the `OrderCloudProvider`. Additonally, the SDK provides typed responses which make working with `useAuthQuery` and `useMutationQuery` generics easier.

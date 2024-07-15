@@ -36,10 +36,10 @@ export const useOcForm = (
   resource: string,
   initialValues?: { parameters?: {[key: string]: unknown}, body?: {[key: string]: unknown} },
   isAssignment?: boolean,
-  inclusion?: string,
+  operationInclusion?: string,
   props?: UseFormProps,
 ) => {
-  const { saveOperation, createOperation, assignmentSaveOperation } = useOperations(resource, inclusion) as any
+  const { saveOperation, createOperation, assignmentSaveOperation } = useOperations(resource, operationInclusion) as any
   const { xpSchemas } = useOrderCloudContext()
 
   const isNew = useMemo(()=> !initialValues?.body || (!initialValues?.body && !Object.keys(initialValues.body).length) ,[initialValues?.body])

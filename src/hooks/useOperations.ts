@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import useApiSpec from './useApiSpec';
 import Case from 'case';
 
-const useOperations = (resource: string, inclusion?: string) => {
+const useOperations = (resource: string, operationInclusion?: string) => {
   const { operationsById } = useApiSpec()
   
   const listOperation = useMemo(() => {
@@ -31,19 +31,19 @@ const useOperations = (resource: string, inclusion?: string) => {
   }, [operationsById, resource])
 
   const assignmentListOperation = useMemo(() => {
-    const assignmentListOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.List${inclusion ?? "" }Assignments`
+    const assignmentListOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.List${operationInclusion ?? "" }Assignments`
    return operationsById[assignmentListOperationId]
-  }, [inclusion, operationsById, resource])
+  }, [operationInclusion, operationsById, resource])
 
   const assignmentSaveOperation = useMemo(() => {
-    const assignmentSaveOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.Save${inclusion ?? "" }Assignment`
+    const assignmentSaveOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.Save${operationInclusion ?? "" }Assignment`
    return operationsById[assignmentSaveOperationId]
-  }, [inclusion, operationsById, resource])
+  }, [operationInclusion, operationsById, resource])
 
   const assignmentDeleteOperation = useMemo(() => {
-    const assignmentDeleteOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.Delete${inclusion ?? "" }Assignment`
+    const assignmentDeleteOperationId = `${resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1))}.Delete${operationInclusion ?? "" }Assignment`
    return operationsById[assignmentDeleteOperationId]
-  }, [inclusion, operationsById, resource])
+  }, [operationInclusion, operationsById, resource])
 
   const result = useMemo(() => {    
     return {
