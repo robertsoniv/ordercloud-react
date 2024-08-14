@@ -2,6 +2,11 @@ import { jwtDecode } from "jwt-decode";
 import { DecodedToken, OrderCloudError } from "ordercloud-javascript-sdk";
 import { ServiceListOptions } from "./hooks/useOcResource";
 
+export const parseToken = (token: string) => {
+  const parsed = jwtDecode<DecodedToken>(token);
+  return parsed;
+};
+
 export const isAnonToken = (token: string) => {
   const parsed = jwtDecode<DecodedToken>(token);
   return !!parsed.orderid;
