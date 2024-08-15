@@ -199,10 +199,12 @@ const useApiSpec = () => {
   const result = useMemo(() => {
     const operations = buildOperations(spec)
     const operationsById = keyBy(operations, 'operationId')
+    const schemas = spec ? spec!.components!.schemas as Record<string, OpenAPIV3.SchemaObject> : {} as Record<string, OpenAPIV3.SchemaObject>
 
     //transformations
     return {
       operationsById,
+      schemas
     }
   }, [spec])
 

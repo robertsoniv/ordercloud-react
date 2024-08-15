@@ -5,6 +5,7 @@ import useColumns from "./useColumns";
 import { useOcResourceList, useOcResourceGet, useMutateOcResource, useDeleteOcResource, useListAssignments, useMutateAssignment, useDeleteAssignment } from "./useOcResource";
 import { useOcForm } from "./useOcForm";
 import useHasAccess from "./useHasAccess";
+import { usePromoExpressions } from "./usePromoExpressions";
 
 export {
     useAuthQuery,
@@ -19,5 +20,6 @@ export {
     useListAssignments,
     useMutateAssignment,
     useDeleteAssignment,
-    useHasAccess
+    useHasAccess,
+    usePromoExpressions
 }
