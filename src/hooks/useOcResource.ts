@@ -120,7 +120,7 @@ export function useOcResourceList<TData>(
     parameters?: { [key: string]: string },
     mutationOptions?: Omit<UseMutationOptions, 'mutationKey'>
     ){
-    const { deleteOperation, listOperation } = useOperations(resource)
+    const { deleteOperation, listOperation, getOperation } = useOperations(resource)
     const { columnHeaders } = useColumns(resource)
     const { baseApiUrl, token } = useOrderCloudContext()
     const url = deleteOperation?.path ? getRoutingUrl(deleteOperation, parameters): ''
@@ -141,6 +141,10 @@ export function useOcResourceList<TData>(
         onSuccess: () => {
           if(columnHeaders?.includes('ID')){
             const resourceID = url.split('/').pop()
+
+            // remove cached GET response for item
+            queryClient.removeQueries({ queryKey: [getOperation?.operationId]})
+
             // remove item from list page results for any cache key that matches list operation
             queryClient.setQueriesData({ queryKey: [listOperation?.operationId]}, (oldData: RequiredDeep<ListPage<TData>> | undefined) => {
               return oldData?.Items
