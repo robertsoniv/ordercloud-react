@@ -49,7 +49,7 @@ export const useOcForm = (
     ? createOperation?.requestBody?.content['application/json'].schema 
     : saveOperation?.requestBody?.content['application/json'].schema
     
-    return schema ?? createOperation?.requestBody?.content['application/json'].schema  // fallback
+    return schema || createOperation?.requestBody?.content['application/json'].schema || saveOperation?.requestBody?.content['application/json'].schema// fallback
   }, [assignmentSaveOperation?.requestBody?.content, createOperation?.requestBody?.content, isAssignment, isNew, saveOperation?.requestBody?.content])
 
   
