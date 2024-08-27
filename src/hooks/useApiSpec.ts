@@ -46,7 +46,7 @@ const psuedoResources: IPsuedoResource[] = [
   },
   {
     name: 'Shipment Items',
-    paths: ['/shipments/{shipmentID}/items'],
+    paths: ['/shipments/{shipmentID}/items', '/shipments/{shipmentID}/items/{orderID}/{lineItemID}'],
     getOperationId: (resourceId, o) => {
       return resourceId + '.' + o?.operationId?.split('.')[1].split('Item')[0]
     },
