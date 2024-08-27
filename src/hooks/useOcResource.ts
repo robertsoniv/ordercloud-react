@@ -77,7 +77,7 @@ export function useOcResourceList<TData>(
       ) {
       const { createOperation, saveOperation, getOperation, listOperation } = useOperations(resource)
       const { baseApiUrl, token } = useOrderCloudContext()
-      const operation = isNew ? createOperation : saveOperation
+      const operation = isNew && createOperation ? createOperation : saveOperation
       const url = operation?.path ? getRoutingUrl(operation, parameters): ''
       const axiosRequest: AxiosRequestConfig = {
             method: operation? operation.verb.toLocaleLowerCase() : '',
@@ -139,11 +139,11 @@ export function useOcResourceList<TData>(
           return resp.data
         },
         onSuccess: () => {
+          // remove cached GET response for item
+          queryClient.removeQueries({ queryKey: [getOperation?.operationId, parameters]})
+
           if(columnHeaders?.includes('ID')){
             const resourceID = url.split('/').pop()
-
-            // remove cached GET response for item
-            queryClient.removeQueries({ queryKey: [getOperation?.operationId]})
 
             // remove item from list page results for any cache key that matches list operation
             queryClient.setQueriesData({ queryKey: [listOperation?.operationId]}, (oldData: RequiredDeep<ListPage<TData>> | undefined) => {
@@ -151,6 +151,9 @@ export function useOcResourceList<TData>(
                 ? {...oldData, Items: oldData.Items.filter((d: any) => d.ID !== resourceID)}
                 : oldData
             })
+          } else {
+            // we don't have an ID to remove from the cache, invalidate list cache for this operation
+            queryClient.invalidateQueries({ queryKey: [listOperation?.operationId]})
           }
         },
         ...mutationOptions
