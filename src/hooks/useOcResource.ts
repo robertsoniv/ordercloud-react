@@ -3,13 +3,11 @@ import {
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
-  UseQueryResult,
-  useMutation,
-  useQuery
+  UseQueryResult
 } from '@tanstack/react-query'
 import { RequiredDeep, ListPage, OrderCloudError } from 'ordercloud-javascript-sdk'
 import { getRoutingUrl, isRouteParam, makeQueryString } from '../utils'
-import { useColumns, useOrderCloudContext } from '.'
+import { useAuthMutation, useAuthQuery, useColumns, useOrderCloudContext } from '.'
 import useOperations from './useOperations'
 import { queryClient } from '..'
 
@@ -32,7 +30,7 @@ export function useOcResourceList<TData>(
         headers: { Authorization: `Bearer ${token}` },
       }
 
-    return useQuery({
+    return useAuthQuery({
       queryKey: [listOperation?.operationId, listOptions, parameters],
       queryFn: async () => {
         const resp = await axios.get<TData>(
@@ -58,7 +56,7 @@ export function useOcResourceList<TData>(
           headers: { Authorization: `Bearer ${token}` },
         }
   
-      return useQuery({
+      return useAuthQuery({
         queryKey: [getOperation?.operationId, parameters],
         queryFn: async () => {
           const resp = await axios.get<TData>(
@@ -85,7 +83,7 @@ export function useOcResourceList<TData>(
             headers: { Authorization: `Bearer ${token}` },
           }
     
-      return useMutation({
+      return useAuthMutation({
           mutationKey: [operation?.operationId],
           mutationFn: async (resourceData) => {
             const resp = isNew 
@@ -131,7 +129,7 @@ export function useOcResourceList<TData>(
           headers: { Authorization: `Bearer ${token}` },
         }
   
-    return useMutation({
+    return useAuthMutation({
         mutationKey: [deleteOperation?.operationId],
         mutationFn: async () => {
           const resp = await axios.delete<TData>(
@@ -178,7 +176,7 @@ export function useListAssignments<TData>(
         headers: { Authorization: `Bearer ${token}` },
       }
 
-    return useQuery({
+    return useAuthQuery({
       queryKey: [assignmentListOperation?.operationId, listOptions, parameters],
       queryFn: async () => {
         const resp = await axios.get<TData>(
@@ -205,7 +203,7 @@ export function useMutateAssignment<TData> (
         headers: { Authorization: `Bearer ${token}` },
       }
 
-  return useMutation({
+  return useAuthMutation({
       mutationKey: [assignmentSaveOperation?.operationId],
       mutationFn: async (resourceData: unknown) => {
         const resp = await axios.post<TData>(
@@ -245,7 +243,7 @@ export function useDeleteAssignment<TData = unknown> (
         headers: { Authorization: `Bearer ${token}` },
       }
 
-  return useMutation({
+  return useAuthMutation({
       mutationKey: [assignmentDeleteOperation?.operationId],
       mutationFn: async () => {
         const resp = await axios.delete<TData>(
