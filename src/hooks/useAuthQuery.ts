@@ -1,4 +1,5 @@
 import {
+  DefaultError,
   QueryKey,
   UseQueryOptions,
   UseQueryResult,
@@ -9,17 +10,21 @@ import { OrderCloudError } from "ordercloud-javascript-sdk";
 import { useEffect, useMemo, useState } from "react";
 import useOrderCloudContext from "./useOrderCloudContext";
 
+export type UseOcQueryOptions<TQueryFnData = unknown, TError = DefaultError, TData = TQueryFnData, TQueryKey extends QueryKey = QueryKey> = Omit<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, 'enabled'> & {
+  disabled?: boolean;
+}
+
 export default function useAuthQuery<
   TQueryFnData = unknown,
   TError = OrderCloudError,
   TData = TQueryFnData,
   TQueryKey extends QueryKey = QueryKey
 >(
-  options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
+  options: UseOcQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
   onError?: (error: OrderCloudError) => void
 ): UseQueryResult<TData, TError> {
   const { isAuthenticated, defaultErrorHandler, ...rest } = useOrderCloudContext();
-
+  const { disabled, ...restOptions} = options;
   const [delayedIsAuthenticated, setDelayedIsAuthenticated] = useState<boolean>()
 
   useEffect(() => {
@@ -33,12 +38,12 @@ export default function useAuthQuery<
     "queryKey" | "queryFn"
   > = useMemo(() => {
     return {
-      enabled: isAuthenticated,
+      enabled: isAuthenticated && !disabled, 
       placeholderData: delayedIsAuthenticated ? keepPreviousData : undefined,
     };
-  }, [isAuthenticated, delayedIsAuthenticated]);
+  }, [isAuthenticated, disabled, delayedIsAuthenticated]);
 
-  const query = useQuery({ ...options, ...authQueryOptions });
+  const query = useQuery({ ...restOptions, ...authQueryOptions });
 
   if (query.error) {
     const error = query.error as unknown as OrderCloudError;

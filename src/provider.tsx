@@ -17,7 +17,9 @@ import { OrderCloudContext } from "./context";
 import { IOrderCloudProvider } from "./models/IOrderCloudProvider";
 import { asyncStoragePersister, queryClient } from "./query";
 import { isAnonToken } from "./utils";
+import axios from 'axios'
 
+let interceptorSetup = false
 const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   children,
   baseApiUrl,
@@ -28,16 +30,6 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   xpSchemas,
   defaultErrorHandler,
 }) => {
-  useEffect(() => {
-    Configuration.Set({
-      cookieOptions: {
-        prefix: clientId,
-      },
-      baseApiUrl,
-      clientID: clientId,
-    });
-  }, [baseApiUrl, clientId]);
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState<string | undefined>();
@@ -114,6 +106,33 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       verifyToken();
     }
   }, [isAuthenticated, verifyToken]);
+
+  useEffect(() => {
+    
+    Configuration.Set({
+      cookieOptions: {
+        prefix: clientId,
+      },
+      baseApiUrl,
+      clientID: clientId,
+    });
+
+    if (!interceptorSetup) {
+      axios.interceptors.request.use(async (config) => {
+        await verifyToken();
+        const verifiedToken = Tokens.GetAccessToken();
+        config.headers.Authorization = `Bearer ${verifiedToken}`;
+        // Do something before request is sent
+        return config;
+      }, function (error) {
+        // Do something with request error
+        return Promise.reject(error);
+      });
+    } else {
+      interceptorSetup = true;
+    }
+    
+  }, [baseApiUrl, clientId, verifyToken]);
 
   const ordercloudContext = useMemo(() => {
     return {
