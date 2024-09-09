@@ -26,9 +26,10 @@ export function useOcResourceList<TData>(
   resource: string,
   listOptions?: ServiceListOptions,
   parameters?: { [key: string]: string },
-  queryOptions?: Omit<UseOcQueryOptions, "queryKey">
+  queryOptions?: Omit<UseOcQueryOptions, "queryKey">,
+  isMeEndpoint?: boolean
 ) {
-  const { listOperation } = useOperations(resource);
+  const { listOperation } = useOperations(resource, undefined, isMeEndpoint);
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
 
@@ -38,7 +39,7 @@ export function useOcResourceList<TData>(
     : "";
 
   const axiosRequest: AxiosRequestConfig = {
-    method: listOperation ? listOperation.verb.toLocaleLowerCase() : "",
+    method: listOperation ? listOperation?.verb.toLocaleLowerCase() : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -57,9 +58,10 @@ export function useOcResourceListWithFacets<TData>(
   resource: string,
   listOptions?: ServiceListOptions,
   parameters?: { [key: string]: string },
-  queryOptions?: Omit<UseOcQueryOptions, "queryKey">
+  queryOptions?: Omit<UseOcQueryOptions, "queryKey">,
+  isMeEndpoint?: boolean
 ) {
-  const { listOperation } = useOperations(resource);
+  const { listOperation } = useOperations(resource, undefined, isMeEndpoint);
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
 
@@ -69,7 +71,7 @@ export function useOcResourceListWithFacets<TData>(
     : "";
 
   const axiosRequest: AxiosRequestConfig = {
-    method: listOperation ? listOperation.verb.toLocaleLowerCase() : "",
+    method: listOperation ? listOperation?.verb.toLocaleLowerCase() : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -87,14 +89,15 @@ export function useOcResourceListWithFacets<TData>(
 export function useOcResourceGet<TData>(
   resource: string,
   parameters?: { [key: string]: string },
-  queryOptions?: Omit<UseOcQueryOptions, "queryKey">
+  queryOptions?: Omit<UseOcQueryOptions, "queryKey">,
+  isMeEndpoint?: boolean
 ) {
-  const { getOperation } = useOperations(resource);
+  const { getOperation } = useOperations(resource, undefined, isMeEndpoint);
   const { baseApiUrl, token } = useOrderCloudContext();
   const url = getOperation?.path ? getRoutingUrl(getOperation, parameters) : "";
 
   const axiosRequest: AxiosRequestConfig = {
-    method: getOperation ? getOperation.verb.toLocaleLowerCase() : "",
+    method: getOperation ? getOperation?.verb.toLocaleLowerCase() : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -113,15 +116,16 @@ export function useMutateOcResource<TData>(
   resource: string,
   parameters?: { [key: string]: string },
   mutationOptions?: Omit<UseOcMutationOptions<TData>, "mutationKey">,
-  isNew?: boolean
+  isNew?: boolean,
+  isMeEndpoint?: boolean
 ) {
   const { createOperation, saveOperation, getOperation, listOperation } =
-    useOperations(resource);
+    useOperations(resource, undefined, isMeEndpoint);
   const { baseApiUrl, token } = useOrderCloudContext();
   const operation = isNew && createOperation ? createOperation : saveOperation;
   const url = operation?.path ? getRoutingUrl(operation, parameters) : "";
   const axiosRequest: AxiosRequestConfig = {
-    method: operation ? operation.verb.toLocaleLowerCase() : "",
+    method: operation ? operation?.verb.toLocaleLowerCase() : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -163,18 +167,18 @@ export function useMutateOcResource<TData>(
 export function useDeleteOcResource<TData>(
   resource: string,
   parameters?: { [key: string]: string },
-  mutationOptions?: Omit<UseOcMutationOptions<TData>, "mutationKey">
+  mutationOptions?: Omit<UseOcMutationOptions<TData>, "mutationKey">,
+  isMeEndpoint?: boolean
 ) {
   const { deleteOperation, listOperation, getOperation } =
-    useOperations(resource);
+    useOperations(resource, undefined, isMeEndpoint);
   const { columnHeaders } = useColumns(resource);
   const { baseApiUrl, token } = useOrderCloudContext();
-  const url = deleteOperation?.path
-    ? getRoutingUrl(deleteOperation, parameters)
-    : "";
+
+  const url = getRoutingUrl(deleteOperation, parameters)
 
   const axiosRequest: AxiosRequestConfig = {
-    method: deleteOperation ? deleteOperation.verb.toLocaleLowerCase() : "",
+    method: deleteOperation?.verb.toLocaleLowerCase() || "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -237,7 +241,7 @@ export function useListAssignments<TData>(
     
   const axiosRequest: AxiosRequestConfig = {
     method: assignmentListOperation
-      ? assignmentListOperation.verb.toLocaleLowerCase()
+      ? assignmentListOperation?.verb.toLocaleLowerCase()
       : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
@@ -270,7 +274,7 @@ export function useMutateAssignment<TData>(
     : "";
   const axiosRequest: AxiosRequestConfig = {
     method: assignmentSaveOperation
-      ? assignmentSaveOperation.verb.toLocaleLowerCase()
+      ? assignmentSaveOperation?.verb.toLocaleLowerCase()
       : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
@@ -320,7 +324,7 @@ export function useDeleteAssignment<TData = unknown>(
 
   const axiosRequest: AxiosRequestConfig = {
     method: assignmentDeleteOperation
-      ? assignmentDeleteOperation.verb.toLocaleLowerCase()
+      ? assignmentDeleteOperation?.verb.toLocaleLowerCase()
       : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },

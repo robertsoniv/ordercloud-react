@@ -126,7 +126,7 @@ function typeSpecificTransform(type: string, propName: string) {
 function ShapeStringProp(propName: string, target: any) {
   let propShape
   propShape = yup.string()
-  if (propName.toLocaleLowerCase() === 'email') {
+  if (propName?.toLocaleLowerCase() === 'email') {
     propShape = propShape.email('Email is invalid')
   }
 
