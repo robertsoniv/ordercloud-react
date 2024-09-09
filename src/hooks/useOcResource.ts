@@ -30,13 +30,14 @@ export function useOcResourceList<TData>(
   isMeEndpoint?: boolean
 ) {
   const { listOperation } = useOperations(resource, undefined, isMeEndpoint);
+  if(!listOperation) console.error(`List${isMeEndpoint ? 'Me': ''} ${resource} is not a valid OrderCloud operation.`);
+
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
 
-  const url = listOperation?.path
-    ? getRoutingUrl(listOperation, parameters) +
-      (queryString ? `?${queryString}` : "")
-    : "";
+  const url =
+    getRoutingUrl(listOperation, parameters) +
+    (queryString ? `?${queryString}` : "");
 
   const axiosRequest: AxiosRequestConfig = {
     method: listOperation ? listOperation?.verb.toLocaleLowerCase() : "",
@@ -50,6 +51,7 @@ export function useOcResourceList<TData>(
       const resp = await axios.get<TData>(url, axiosRequest);
       return resp.data;
     },
+    disabled: queryOptions?.disabled || !url,
     ...queryOptions,
   }) as UseQueryResult<RequiredDeep<ListPage<TData>>, OrderCloudError>;
 }
@@ -62,13 +64,13 @@ export function useOcResourceListWithFacets<TData>(
   isMeEndpoint?: boolean
 ) {
   const { listOperation } = useOperations(resource, undefined, isMeEndpoint);
+  if(!listOperation) console.error(`List${isMeEndpoint ? 'Me': ''} ${resource} is not a valid OrderCloud operation.`);
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
 
-  const url = listOperation?.path
-    ? getRoutingUrl(listOperation, parameters) +
-      (queryString ? `?${queryString}` : "")
-    : "";
+  const url =
+    getRoutingUrl(listOperation, parameters) +
+    (queryString ? `?${queryString}` : "");
 
   const axiosRequest: AxiosRequestConfig = {
     method: listOperation ? listOperation?.verb.toLocaleLowerCase() : "",
@@ -82,8 +84,12 @@ export function useOcResourceListWithFacets<TData>(
       const resp = await axios.get<TData>(url, axiosRequest);
       return resp.data;
     },
+    disabled: queryOptions?.disabled || !url,
     ...queryOptions,
-  }) as UseQueryResult<RequiredDeep<ListPageWithFacets<TData>>, OrderCloudError>;
+  }) as UseQueryResult<
+    RequiredDeep<ListPageWithFacets<TData>>,
+    OrderCloudError
+  >;
 }
 
 export function useOcResourceGet<TData>(
@@ -93,8 +99,9 @@ export function useOcResourceGet<TData>(
   isMeEndpoint?: boolean
 ) {
   const { getOperation } = useOperations(resource, undefined, isMeEndpoint);
+  if(!getOperation) console.error(`Get${isMeEndpoint ? 'Me': ''} ${resource} is not a valid OrderCloud operation.`);
   const { baseApiUrl, token } = useOrderCloudContext();
-  const url = getOperation?.path ? getRoutingUrl(getOperation, parameters) : "";
+  const url = getRoutingUrl(getOperation, parameters);
 
   const axiosRequest: AxiosRequestConfig = {
     method: getOperation ? getOperation?.verb.toLocaleLowerCase() : "",
@@ -108,6 +115,7 @@ export function useOcResourceGet<TData>(
       const resp = await axios.get<TData>(url, axiosRequest);
       return resp.data;
     },
+    disabled: queryOptions?.disabled || !url,
     ...queryOptions,
   }) as UseQueryResult<RequiredDeep<TData>, OrderCloudError>;
 }
@@ -123,7 +131,9 @@ export function useMutateOcResource<TData>(
     useOperations(resource, undefined, isMeEndpoint);
   const { baseApiUrl, token } = useOrderCloudContext();
   const operation = isNew && createOperation ? createOperation : saveOperation;
-  const url = operation?.path ? getRoutingUrl(operation, parameters) : "";
+  if(!operation) console.error(`${isNew ? 'Create' : 'Save'} ${isMeEndpoint ? 'Me': ''} ${resource} is not a valid OrderCloud operation.`); 
+
+  const url = getRoutingUrl(operation, parameters);
   const axiosRequest: AxiosRequestConfig = {
     method: operation ? operation?.verb.toLocaleLowerCase() : "",
     baseURL: baseApiUrl + "/v1",
@@ -160,6 +170,7 @@ export function useMutateOcResource<TData>(
           }
         );
     },
+    disabled: mutationOptions?.disabled || !url,
     ...mutationOptions,
   }) as UseMutationResult<RequiredDeep<TData>, OrderCloudError>;
 }
@@ -170,12 +181,17 @@ export function useDeleteOcResource<TData>(
   mutationOptions?: Omit<UseOcMutationOptions<TData>, "mutationKey">,
   isMeEndpoint?: boolean
 ) {
-  const { deleteOperation, listOperation, getOperation } =
-    useOperations(resource, undefined, isMeEndpoint);
+  const { deleteOperation, listOperation, getOperation } = useOperations(
+    resource,
+    undefined,
+    isMeEndpoint
+  );
+  if(!deleteOperation) console.error(`Delete${isMeEndpoint ? 'Me': ''} ${resource} is not a valid OrderCloud operation.`);
+
   const { columnHeaders } = useColumns(resource);
   const { baseApiUrl, token } = useOrderCloudContext();
 
-  const url = getRoutingUrl(deleteOperation, parameters)
+  const url = getRoutingUrl(deleteOperation, parameters);
 
   const axiosRequest: AxiosRequestConfig = {
     method: deleteOperation?.verb.toLocaleLowerCase() || "",
@@ -217,6 +233,7 @@ export function useDeleteOcResource<TData>(
         });
       }
     },
+    disabled: mutationOptions?.disabled || !url,
     ...mutationOptions,
   }) as UseMutationResult<void, OrderCloudError>;
 }
@@ -232,13 +249,14 @@ export function useListAssignments<TData>(
     resource,
     operationInclusion
   );
+  if(!assignmentListOperation) console.error(`List ${resource} Assignments is not a valid OrderCloud operation.`);
+
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
-  const url = assignmentListOperation?.path
-    ? getRoutingUrl(assignmentListOperation, parameters) +
-      (queryString ? `?${queryString}` : "")
-    : "";
-    
+  const url =
+    getRoutingUrl(assignmentListOperation, parameters) +
+    (queryString ? `?${queryString}` : "");
+
   const axiosRequest: AxiosRequestConfig = {
     method: assignmentListOperation
       ? assignmentListOperation?.verb.toLocaleLowerCase()
@@ -253,6 +271,7 @@ export function useListAssignments<TData>(
       const resp = await axios.get<TData>(url, axiosRequest);
       return resp.data;
     },
+    disabled: queryOptions?.disabled || !url,
     ...queryOptions,
   }) as UseQueryResult<RequiredDeep<ListPage<TData>>, OrderCloudError>;
 }
@@ -267,11 +286,10 @@ export function useMutateAssignment<TData>(
     resource,
     operationInclusion
   );
+  if(!assignmentSaveOperation) console.error(`Save ${resource} Assignments is not a valid OrderCloud operation.`);
 
   const { baseApiUrl, token } = useOrderCloudContext();
-  const url = assignmentSaveOperation?.path
-    ? getRoutingUrl(assignmentSaveOperation, parameters)
-    : "";
+  const url = getRoutingUrl(assignmentSaveOperation, parameters);
   const axiosRequest: AxiosRequestConfig = {
     method: assignmentSaveOperation
       ? assignmentSaveOperation?.verb.toLocaleLowerCase()
@@ -292,6 +310,7 @@ export function useMutateAssignment<TData>(
         queryKey: [assignmentListOperation?.operationId],
       });
     },
+    disabled: mutationOptions?.disabled || !url,
     ...mutationOptions,
   }) as UseMutationResult<void, OrderCloudError>;
 }
@@ -306,6 +325,7 @@ export function useDeleteAssignment<TData = unknown>(
     resource,
     operationInclusion
   );
+  if(!assignmentDeleteOperation) console.error(`Delete ${resource} Assignments is not a valid OrderCloud operation.`);
   const { baseApiUrl, token } = useOrderCloudContext();
   let queryString;
   if (parameters) {
@@ -317,10 +337,9 @@ export function useDeleteAssignment<TData = unknown>(
     });
     queryString = makeQueryString(queryParams);
   }
-  const url = assignmentDeleteOperation?.path
-    ? getRoutingUrl(assignmentDeleteOperation, parameters) +
-      (queryString ? `?${queryString}` : "")
-    : "";
+  const url =
+    getRoutingUrl(assignmentDeleteOperation, parameters) +
+    (queryString ? `?${queryString}` : "");
 
   const axiosRequest: AxiosRequestConfig = {
     method: assignmentDeleteOperation
@@ -342,6 +361,7 @@ export function useDeleteAssignment<TData = unknown>(
         queryKey: [assignmentListOperation?.operationId],
       });
     },
+    disabled: mutationOptions?.disabled || !url,
     ...mutationOptions,
   }) as UseMutationResult<void, OrderCloudError>;
 }
