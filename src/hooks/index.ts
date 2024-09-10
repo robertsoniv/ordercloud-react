@@ -15,6 +15,7 @@ import {
 import { useOcForm } from "./useOcForm";
 import useHasAccess from "./useHasAccess";
 import { usePromoExpressions } from "./usePromoExpressions";
+import useShopper from "./useShopper";
 
 export {
   useAuthQuery,
@@ -32,4 +33,5 @@ export {
   useDeleteAssignment,
   useHasAccess,
   usePromoExpressions,
+  useShopper,
 };
