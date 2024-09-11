@@ -64,7 +64,10 @@ const useShopper = () => {
 
   const { mutateAsync: submitCart } = useAuthMutation({
     mutationKey: ["submitCart"],
-    mutationFn: async () => await Cart.Submit(),
+    mutationFn: async () => {
+      await Cart.Submit()
+      return
+    },
     onSuccess: () => refetchWorksheet(),
   });
 
