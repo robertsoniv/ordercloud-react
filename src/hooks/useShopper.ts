@@ -13,8 +13,8 @@ import useAuthMutation from "./useAuthMutation";
 import { queryClient } from "..";
 
 const useShopper = () => {
-  const refetchWorksheet = useCallback(() => {
-    queryClient.refetchQueries({
+  const invalidateWorksheet = useCallback(() => {
+    queryClient.invalidateQueries({
       queryKey: ["worksheet"],
     });
   }, []);
@@ -28,7 +28,7 @@ const useShopper = () => {
     mutationKey: ["addCartLineItem"],
     mutationFn: async (lineItem: LineItem) =>
       await Cart.CreateLineItem(lineItem),
-    onSuccess: () => refetchWorksheet(),
+    onSuccess: () => invalidateWorksheet(),
   });
 
   const { mutateAsync: patchCartLineItem } = useAuthMutation({
@@ -40,26 +40,32 @@ const useShopper = () => {
       ID: string;
       lineItem: PartialDeep<LineItem>;
     }) => await Cart.PatchLineItem(ID, lineItem),
-    onSuccess: () => refetchWorksheet(),
+    onSuccess: () => invalidateWorksheet(),
+  });
+
+  const { mutateAsync: deleteCartLineItem } = useAuthMutation({
+    mutationKey: ["deleteCartLineItem"],
+    mutationFn: async (ID: string) => await Cart.DeleteLineItem(ID),
+    onSuccess: () => invalidateWorksheet(),
   });
 
   const { mutateAsync: addCartPromo } = useAuthMutation({
     mutationKey: ["addCartPromo"],
     mutationFn: async (promoCode: string) => await Cart.AddPromotion(promoCode),
-    onSuccess: () => refetchWorksheet(),
+    onSuccess: () => invalidateWorksheet(),
   });
 
   const { mutateAsync: removeCartPromo } = useAuthMutation({
     mutationKey: ["removeCartPromo"],
     mutationFn: async (promoCode: string) =>
       await Cart.DeletePromotion(promoCode),
-    onSuccess: () => refetchWorksheet(),
+    onSuccess: () => invalidateWorksheet(),
   });
 
   const { mutateAsync: applyPromotions } = useAuthMutation({
     mutationKey: ["addCartPromo"],
     mutationFn: async () => await Cart.ApplyPromotions(),
-    onSuccess: () => refetchWorksheet(),
+    onSuccess: () => invalidateWorksheet(),
   });
 
   const { mutateAsync: submitCart } = useAuthMutation({
@@ -68,13 +74,13 @@ const useShopper = () => {
       await Cart.Submit()
       return
     },
-    onSuccess: () => refetchWorksheet(),
+    onSuccess: () => invalidateWorksheet(),
   });
 
   const { mutateAsync: deleteCart } = useAuthMutation({
     mutationKey: ["deleteCart"],
     mutationFn: async () => await Cart.Delete(),
-    onSuccess: () => refetchWorksheet(),
+    onSuccess: () => invalidateWorksheet(),
   });
 
   return useMemo(() => {
@@ -82,6 +88,7 @@ const useShopper = () => {
       orderWorksheet,
       addCartLineItem,
       patchCartLineItem,
+      deleteCartLineItem,
       addCartPromo,
       submitCart,
       deleteCart,
@@ -92,6 +99,7 @@ const useShopper = () => {
     orderWorksheet,
     addCartLineItem,
     patchCartLineItem,
+    deleteCartLineItem,
     addCartPromo,
     submitCart,
     deleteCart,
