@@ -4,13 +4,16 @@ import Case from "case";
 
 const useOperations = (
   resource: string,
-  operationInclusion?: string,
-  meEndpoint?: boolean
+  operationInclusion?: string
 ) => {
   const { operationsById } = useApiSpec();
+  const isMeEndpoint = useMemo(()=> resource.includes('Me.'),[resource])
   const resourceName = useMemo(
-    () => resource.charAt(0).toUpperCase() + Case.camel(resource.slice(1)),
-    [resource]
+    () => {
+      const resourceName = isMeEndpoint ? resource.replace("Me.", "") : resource
+      return resourceName.charAt(0).toUpperCase() + Case.camel(resourceName.slice(1))
+    },
+    [isMeEndpoint, resource]
   );
 
   const tryGetOperation = useCallback(
@@ -20,58 +23,57 @@ const useOperations = (
 
   const listOperation = useMemo(() => {
     let listOperationId;
-    if (meEndpoint) {
+    if (isMeEndpoint) {
       listOperationId = `Me.List${resourceName}`;
     } else {
       listOperationId = `${resourceName}.List`;
     }
-
     return tryGetOperation(listOperationId);
-  }, [meEndpoint, resourceName, tryGetOperation]);
+  }, [isMeEndpoint, resourceName, tryGetOperation]);
 
   const getOperation = useMemo(() => {
     let getOperationId;
-    if (meEndpoint) {
-      getOperationId = `Me.Get${resource.slice(0, -1)}`;
+    if (isMeEndpoint) {
+      getOperationId = `Me.Get${resourceName.slice(0, -1)}`;
     } else {
       getOperationId = `${resourceName}.Get`;
     }
 
     return tryGetOperation(getOperationId);
-  }, [meEndpoint, resource, resourceName, tryGetOperation]);
+  }, [isMeEndpoint, resourceName, tryGetOperation]);
 
   const saveOperation = useMemo(() => {
     let saveOperationId;
-    if (meEndpoint) {
-      saveOperationId = `Me.Save${resource.slice(0, -1)}`;
+    if (isMeEndpoint) {
+      saveOperationId = `Me.Save${resourceName.slice(0, -1)}`;
     } else {
       saveOperationId = `${resourceName}.Save`;
     }
 
     return tryGetOperation(saveOperationId);
-  }, [meEndpoint, resource, resourceName, tryGetOperation]);
+  }, [isMeEndpoint, resourceName, tryGetOperation]);
 
   const createOperation = useMemo(() => {
     let createOperationId;
-    if (meEndpoint) {
-      createOperationId = `Me.Create${resource.slice(0, -1)}`;
+    if (isMeEndpoint) {
+      createOperationId = `Me.Create${resourceName.slice(0, -1)}`;
     } else {
       createOperationId = `${resourceName}.Create`;
     }
 
     return tryGetOperation(createOperationId);
-  }, [meEndpoint, resource, resourceName, tryGetOperation]);
+  }, [isMeEndpoint, resourceName, tryGetOperation]);
 
   const deleteOperation = useMemo(() => {
     let deleteOperationId;
-    if (meEndpoint) {
-      deleteOperationId = `Me.Delete${resource.slice(0, -1)}`;
+    if (isMeEndpoint) {
+      deleteOperationId = `Me.Delete${resourceName.slice(0, -1)}`;
     } else {
       deleteOperationId = `${resourceName}.Delete`;
     }
 
     return tryGetOperation(deleteOperationId);
-  }, [meEndpoint, resource, resourceName, tryGetOperation]);
+  }, [isMeEndpoint, resourceName, tryGetOperation]);
 
   const assignmentListOperation = useMemo(() => {
     const assignmentListOperationId = `${resourceName}.List${
