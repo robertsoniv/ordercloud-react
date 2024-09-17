@@ -41,7 +41,8 @@ export const isRouteParam = (operation: any, paramName: string) => {
 }
 
 export const getRoutingUrl = (operation: any, params: any)=> {
-  let url = operation.path
+  let url = operation?.path
+  if(!url) return ""
   const paramsTest = params
   if (url.indexOf('{') > -1) {
     Object.entries(paramsTest)

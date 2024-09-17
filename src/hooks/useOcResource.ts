@@ -22,6 +22,10 @@ export type ServiceListOptions = {
   [key: string]: ServiceListOptions | string | undefined;
 };
 
+function throwOperationNotFoundError(crudAction: string, resource: string){
+  console.error(`Could not find a valid OrderCloud ${crudAction} operation for resource: ${resource}`)
+}
+
 export function useOcResourceList<TData>(
   resource: string,
   listOptions?: ServiceListOptions,
@@ -29,16 +33,17 @@ export function useOcResourceList<TData>(
   queryOptions?: Omit<UseOcQueryOptions, "queryKey">
 ) {
   const { listOperation } = useOperations(resource);
+  if(!listOperation) throwOperationNotFoundError("List", resource)
+
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
 
-  const url = listOperation?.path
-    ? getRoutingUrl(listOperation, parameters) +
-      (queryString ? `?${queryString}` : "")
-    : "";
+  const url =
+    getRoutingUrl(listOperation, parameters) +
+    (queryString ? `?${queryString}` : "");
 
   const axiosRequest: AxiosRequestConfig = {
-    method: listOperation ? listOperation.verb.toLocaleLowerCase() : "",
+    method: listOperation ? listOperation?.verb.toLocaleLowerCase() : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -49,6 +54,7 @@ export function useOcResourceList<TData>(
       const resp = await axios.get<TData>(url, axiosRequest);
       return resp.data;
     },
+    disabled: queryOptions?.disabled || !listOperation,
     ...queryOptions,
   }) as UseQueryResult<RequiredDeep<ListPage<TData>>, OrderCloudError>;
 }
@@ -60,16 +66,16 @@ export function useOcResourceListWithFacets<TData>(
   queryOptions?: Omit<UseOcQueryOptions, "queryKey">
 ) {
   const { listOperation } = useOperations(resource);
+  if(!listOperation) throwOperationNotFoundError("List", resource)
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
 
-  const url = listOperation?.path
-    ? getRoutingUrl(listOperation, parameters) +
-      (queryString ? `?${queryString}` : "")
-    : "";
+  const url =
+    getRoutingUrl(listOperation, parameters) +
+    (queryString ? `?${queryString}` : "");
 
   const axiosRequest: AxiosRequestConfig = {
-    method: listOperation ? listOperation.verb.toLocaleLowerCase() : "",
+    method: listOperation ? listOperation?.verb.toLocaleLowerCase() : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -80,8 +86,12 @@ export function useOcResourceListWithFacets<TData>(
       const resp = await axios.get<TData>(url, axiosRequest);
       return resp.data;
     },
+    disabled: queryOptions?.disabled || !listOperation,
     ...queryOptions,
-  }) as UseQueryResult<RequiredDeep<ListPageWithFacets<TData>>, OrderCloudError>;
+  }) as UseQueryResult<
+    RequiredDeep<ListPageWithFacets<TData>>,
+    OrderCloudError
+  >;
 }
 
 export function useOcResourceGet<TData>(
@@ -90,11 +100,12 @@ export function useOcResourceGet<TData>(
   queryOptions?: Omit<UseOcQueryOptions, "queryKey">
 ) {
   const { getOperation } = useOperations(resource);
+  if(!getOperation) throwOperationNotFoundError("Get", resource)
   const { baseApiUrl, token } = useOrderCloudContext();
-  const url = getOperation?.path ? getRoutingUrl(getOperation, parameters) : "";
+  const url = getRoutingUrl(getOperation, parameters);
 
   const axiosRequest: AxiosRequestConfig = {
-    method: getOperation ? getOperation.verb.toLocaleLowerCase() : "",
+    method: getOperation ? getOperation?.verb.toLocaleLowerCase() : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -105,6 +116,7 @@ export function useOcResourceGet<TData>(
       const resp = await axios.get<TData>(url, axiosRequest);
       return resp.data;
     },
+    disabled: queryOptions?.disabled || !getOperation,
     ...queryOptions,
   }) as UseQueryResult<RequiredDeep<TData>, OrderCloudError>;
 }
@@ -119,9 +131,11 @@ export function useMutateOcResource<TData>(
     useOperations(resource);
   const { baseApiUrl, token } = useOrderCloudContext();
   const operation = isNew && createOperation ? createOperation : saveOperation;
-  const url = operation?.path ? getRoutingUrl(operation, parameters) : "";
+  if(!operation) throwOperationNotFoundError(isNew ? 'Create' : 'Save', resource)
+
+  const url = getRoutingUrl(operation, parameters);
   const axiosRequest: AxiosRequestConfig = {
-    method: operation ? operation.verb.toLocaleLowerCase() : "",
+    method: operation ? operation?.verb.toLocaleLowerCase() : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -156,6 +170,7 @@ export function useMutateOcResource<TData>(
           }
         );
     },
+    disabled: mutationOptions?.disabled || !operation,
     ...mutationOptions,
   }) as UseMutationResult<RequiredDeep<TData>, OrderCloudError>;
 }
@@ -165,16 +180,18 @@ export function useDeleteOcResource<TData>(
   parameters?: { [key: string]: string },
   mutationOptions?: Omit<UseOcMutationOptions<TData>, "mutationKey">
 ) {
-  const { deleteOperation, listOperation, getOperation } =
-    useOperations(resource);
+  const { deleteOperation, listOperation, getOperation } = useOperations(
+    resource
+  );
+  if(!deleteOperation) throwOperationNotFoundError("Delete", resource)
+
   const { columnHeaders } = useColumns(resource);
   const { baseApiUrl, token } = useOrderCloudContext();
-  const url = deleteOperation?.path
-    ? getRoutingUrl(deleteOperation, parameters)
-    : "";
+
+  const url = getRoutingUrl(deleteOperation, parameters);
 
   const axiosRequest: AxiosRequestConfig = {
-    method: deleteOperation ? deleteOperation.verb.toLocaleLowerCase() : "",
+    method: deleteOperation?.verb.toLocaleLowerCase() || "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
   };
@@ -213,6 +230,7 @@ export function useDeleteOcResource<TData>(
         });
       }
     },
+    disabled: mutationOptions?.disabled || !deleteOperation,
     ...mutationOptions,
   }) as UseMutationResult<void, OrderCloudError>;
 }
@@ -228,16 +246,17 @@ export function useListAssignments<TData>(
     resource,
     operationInclusion
   );
+  if(!assignmentListOperation) throwOperationNotFoundError("List Assignment", resource)
+
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
-  const url = assignmentListOperation?.path
-    ? getRoutingUrl(assignmentListOperation, parameters) +
-      (queryString ? `?${queryString}` : "")
-    : "";
-    
+  const url =
+    getRoutingUrl(assignmentListOperation, parameters) +
+    (queryString ? `?${queryString}` : "");
+
   const axiosRequest: AxiosRequestConfig = {
     method: assignmentListOperation
-      ? assignmentListOperation.verb.toLocaleLowerCase()
+      ? assignmentListOperation?.verb.toLocaleLowerCase()
       : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
@@ -249,6 +268,7 @@ export function useListAssignments<TData>(
       const resp = await axios.get<TData>(url, axiosRequest);
       return resp.data;
     },
+    disabled: queryOptions?.disabled || !assignmentListOperation,
     ...queryOptions,
   }) as UseQueryResult<RequiredDeep<ListPage<TData>>, OrderCloudError>;
 }
@@ -263,14 +283,13 @@ export function useMutateAssignment<TData>(
     resource,
     operationInclusion
   );
+  if(!assignmentSaveOperation) throwOperationNotFoundError("Save Assignment", resource)
 
   const { baseApiUrl, token } = useOrderCloudContext();
-  const url = assignmentSaveOperation?.path
-    ? getRoutingUrl(assignmentSaveOperation, parameters)
-    : "";
+  const url = getRoutingUrl(assignmentSaveOperation, parameters);
   const axiosRequest: AxiosRequestConfig = {
     method: assignmentSaveOperation
-      ? assignmentSaveOperation.verb.toLocaleLowerCase()
+      ? assignmentSaveOperation?.verb.toLocaleLowerCase()
       : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
@@ -288,6 +307,7 @@ export function useMutateAssignment<TData>(
         queryKey: [assignmentListOperation?.operationId],
       });
     },
+    disabled: mutationOptions?.disabled || !assignmentSaveOperation,
     ...mutationOptions,
   }) as UseMutationResult<void, OrderCloudError>;
 }
@@ -302,6 +322,7 @@ export function useDeleteAssignment<TData = unknown>(
     resource,
     operationInclusion
   );
+  if(!assignmentDeleteOperation) throwOperationNotFoundError("Delete Assignment", resource)
   const { baseApiUrl, token } = useOrderCloudContext();
   let queryString;
   if (parameters) {
@@ -313,14 +334,13 @@ export function useDeleteAssignment<TData = unknown>(
     });
     queryString = makeQueryString(queryParams);
   }
-  const url = assignmentDeleteOperation?.path
-    ? getRoutingUrl(assignmentDeleteOperation, parameters) +
-      (queryString ? `?${queryString}` : "")
-    : "";
+  const url =
+    getRoutingUrl(assignmentDeleteOperation, parameters) +
+    (queryString ? `?${queryString}` : "");
 
   const axiosRequest: AxiosRequestConfig = {
     method: assignmentDeleteOperation
-      ? assignmentDeleteOperation.verb.toLocaleLowerCase()
+      ? assignmentDeleteOperation?.verb.toLocaleLowerCase()
       : "",
     baseURL: baseApiUrl + "/v1",
     headers: { Authorization: `Bearer ${token}` },
@@ -338,6 +358,7 @@ export function useDeleteAssignment<TData = unknown>(
         queryKey: [assignmentListOperation?.operationId],
       });
     },
+    disabled: mutationOptions?.disabled || !assignmentDeleteOperation,
     ...mutationOptions,
   }) as UseMutationResult<void, OrderCloudError>;
 }
