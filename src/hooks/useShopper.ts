@@ -19,7 +19,11 @@ const useShopper = () => {
     });
   }, []);
 
-  const { data: orderWorksheet } = useAuthQuery({
+  const {
+    data: orderWorksheet,
+    isLoading,
+    isPending,
+  } = useAuthQuery({
     queryKey: ["worksheet"],
     queryFn: async () => await Cart.GetOrderWorksheet(),
   }) as UseQueryResult<RequiredDeep<OrderWorksheet>, OrderCloudError>;
@@ -71,8 +75,8 @@ const useShopper = () => {
   const { mutateAsync: submitCart } = useAuthMutation({
     mutationKey: ["submitCart"],
     mutationFn: async () => {
-      await Cart.Submit()
-      return
+      await Cart.Submit();
+      return;
     },
     onSuccess: () => invalidateWorksheet(),
   });
@@ -86,6 +90,7 @@ const useShopper = () => {
   return useMemo(() => {
     return {
       orderWorksheet,
+      worksheetLoading: isPending || isLoading,
       addCartLineItem,
       patchCartLineItem,
       deleteCartLineItem,
@@ -97,6 +102,8 @@ const useShopper = () => {
     };
   }, [
     orderWorksheet,
+    isPending,
+    isLoading,
     addCartLineItem,
     patchCartLineItem,
     deleteCartLineItem,

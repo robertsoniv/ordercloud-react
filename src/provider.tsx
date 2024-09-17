@@ -17,9 +17,9 @@ import { OrderCloudContext } from "./context";
 import { IOrderCloudProvider } from "./models/IOrderCloudProvider";
 import { asyncStoragePersister, queryClient } from "./query";
 import { isAnonToken } from "./utils";
-import axios from 'axios'
+import axios from "axios";
 
-let interceptorSetup = false
+let interceptorSetup = false;
 const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   children,
   baseApiUrl,
@@ -102,13 +102,6 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   }, [allowAnonymous, clientId, scope, customScope, handleLogout]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      verifyToken();
-    }
-  }, [isAuthenticated, verifyToken]);
-
-  useEffect(() => {
-    
     Configuration.Set({
       cookieOptions: {
         prefix: clientId,
@@ -118,21 +111,27 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     });
 
     if (!interceptorSetup) {
-      axios.interceptors.request.use(async (config) => {
-        await verifyToken();
-        const verifiedToken = Tokens.GetAccessToken();
-        config.headers.Authorization = `Bearer ${verifiedToken}`;
-        // Do something before request is sent
-        return config;
-      }, function (error) {
-        // Do something with request error
-        return Promise.reject(error);
-      });
+      axios.interceptors.request.use(
+        async (config) => {
+          await verifyToken();
+          const verifiedToken = Tokens.GetAccessToken();
+          config.headers.Authorization = `Bearer ${verifiedToken}`;
+          // Do something before request is sent
+          return config;
+        },
+        function (error) {
+          // Do something with request error
+          return Promise.reject(error);
+        }
+      );
     } else {
       interceptorSetup = true;
     }
-    
-  }, [baseApiUrl, clientId, verifyToken]);
+
+    if (!isAuthenticated) {
+      verifyToken();
+    }
+  }, [baseApiUrl, clientId, isAuthenticated, verifyToken]);
 
   const ordercloudContext = useMemo(() => {
     return {
