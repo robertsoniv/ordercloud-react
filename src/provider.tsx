@@ -28,6 +28,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   customScope,
   allowAnonymous,
   xpSchemas,
+  autoApplyPromotions,
   defaultErrorHandler,
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -144,6 +145,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       isLoggedIn,
       token,
       xpSchemas,
+      autoApplyPromotions,
       logout: handleLogout,
       login: handleLogin,
       defaultErrorHandler,
@@ -158,6 +160,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     isLoggedIn,
     token,
     xpSchemas,
+    autoApplyPromotions,
     handleLogout,
     handleLogin,
     defaultErrorHandler,

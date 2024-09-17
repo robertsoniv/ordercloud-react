@@ -10,10 +10,12 @@ import {
 } from "ordercloud-javascript-sdk";
 import { UseQueryResult } from "@tanstack/react-query";
 import useAuthMutation from "./useAuthMutation";
-import { queryClient } from "..";
+import { queryClient, useOrderCloudContext } from "..";
 
 const useShopper = () => {
-  const invalidateWorksheet = useCallback(() => {
+  const { autoApplyPromotions } = useOrderCloudContext()
+  
+  const invalidateWorksheet = useCallback(async () => {
     queryClient.invalidateQueries({
       queryKey: ["worksheet"],
     });
@@ -25,14 +27,27 @@ const useShopper = () => {
     isPending,
   } = useAuthQuery({
     queryKey: ["worksheet"],
-    queryFn: async () => await Cart.GetOrderWorksheet(),
+    queryFn: async () =>
+        await Cart.GetOrderWorksheet()
   }) as UseQueryResult<RequiredDeep<OrderWorksheet>, OrderCloudError>;
+
+  const { mutateAsync: applyPromotions } = useAuthMutation({
+    mutationKey: ["applyPromos"],
+    mutationFn: async () => {
+      await Cart.ApplyPromotions()
+      return
+    },
+    onSuccess: () => invalidateWorksheet(),
+  });
 
   const { mutateAsync: addCartLineItem } = useAuthMutation({
     mutationKey: ["addCartLineItem"],
     mutationFn: async (lineItem: LineItem) =>
       await Cart.CreateLineItem(lineItem),
-    onSuccess: () => invalidateWorksheet(),
+    onSuccess: () => {
+      if (autoApplyPromotions) applyPromotions()
+      invalidateWorksheet()
+    },
   });
 
   const { mutateAsync: patchCartLineItem } = useAuthMutation({
@@ -44,13 +59,19 @@ const useShopper = () => {
       ID: string;
       lineItem: PartialDeep<LineItem>;
     }) => await Cart.PatchLineItem(ID, lineItem),
-    onSuccess: () => invalidateWorksheet(),
+    onSuccess: () => {
+      if (autoApplyPromotions) applyPromotions()
+      invalidateWorksheet()
+    },
   });
 
   const { mutateAsync: deleteCartLineItem } = useAuthMutation({
     mutationKey: ["deleteCartLineItem"],
     mutationFn: async (ID: string) => await Cart.DeleteLineItem(ID),
-    onSuccess: () => invalidateWorksheet(),
+    onSuccess: () => {
+      if (autoApplyPromotions) applyPromotions()
+      invalidateWorksheet()
+    },
   });
 
   const { mutateAsync: addCartPromo } = useAuthMutation({
@@ -66,9 +87,9 @@ const useShopper = () => {
     onSuccess: () => invalidateWorksheet(),
   });
 
-  const { mutateAsync: applyPromotions } = useAuthMutation({
-    mutationKey: ["addCartPromo"],
-    mutationFn: async () => await Cart.ApplyPromotions(),
+  const { mutateAsync: listEligiblePromotions } = useAuthMutation({
+    mutationKey: ["listPromotions"],
+    mutationFn: async () => await Cart.ListEligiblePromotions(),
     onSuccess: () => invalidateWorksheet(),
   });
 
@@ -99,6 +120,7 @@ const useShopper = () => {
       deleteCart,
       removeCartPromo,
       applyPromotions,
+      listEligiblePromotions
     };
   }, [
     orderWorksheet,
@@ -112,6 +134,7 @@ const useShopper = () => {
     deleteCart,
     removeCartPromo,
     applyPromotions,
+    listEligiblePromotions
   ]);
 };
 

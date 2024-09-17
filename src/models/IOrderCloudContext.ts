@@ -30,5 +30,6 @@ export interface IOrderCloudContext {
   allowAnonymous: boolean;
   defaultErrorHandler?: (error:OrderCloudError, context:IOrderCloudErrorContext) => void;
   token?: string;
-  xpSchemas?: OpenAPIV3.SchemaObject
+  xpSchemas?: OpenAPIV3.SchemaObject;
+  autoApplyPromotions?: boolean;
 }

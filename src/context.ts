@@ -16,6 +16,7 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   customScope: [],
   allowAnonymous: false,
   token: undefined,
+  autoApplyPromotions: false,
   xpSchemas: {} as OpenAPIV3.SchemaObject
 };
 
