@@ -1,20 +1,24 @@
 import { useCallback, useMemo } from "react";
 import useAuthQuery from "./useAuthQuery";
 import {
+  Auth,
   Cart,
   LineItem,
   OrderCloudError,
   OrderWorksheet,
   PartialDeep,
   RequiredDeep,
+  Tokens,
 } from "ordercloud-javascript-sdk";
 import { UseQueryResult } from "@tanstack/react-query";
 import useAuthMutation from "./useAuthMutation";
 import { queryClient, useOrderCloudContext } from "..";
+import { isAnonToken } from "../utils";
 
 const useShopper = () => {
-  const { autoApplyPromotions } = useOrderCloudContext()
-  
+  const { autoApplyPromotions, clientId, scope, customScope } =
+    useOrderCloudContext();
+
   const invalidateWorksheet = useCallback(async () => {
     queryClient.invalidateQueries({
       queryKey: ["worksheet"],
@@ -27,15 +31,14 @@ const useShopper = () => {
     isPending,
   } = useAuthQuery({
     queryKey: ["worksheet"],
-    queryFn: async () =>
-        await Cart.GetOrderWorksheet()
+    queryFn: async () => await Cart.GetOrderWorksheet(),
   }) as UseQueryResult<RequiredDeep<OrderWorksheet>, OrderCloudError>;
 
   const { mutateAsync: applyPromotions } = useAuthMutation({
     mutationKey: ["applyPromos"],
     mutationFn: async () => {
-      await Cart.ApplyPromotions()
-      return
+      await Cart.ApplyPromotions();
+      return;
     },
     onSuccess: () => invalidateWorksheet(),
   });
@@ -45,8 +48,8 @@ const useShopper = () => {
     mutationFn: async (lineItem: LineItem) =>
       await Cart.CreateLineItem(lineItem),
     onSuccess: () => {
-      if (autoApplyPromotions) applyPromotions()
-      invalidateWorksheet()
+      if (autoApplyPromotions) applyPromotions();
+      invalidateWorksheet();
     },
   });
 
@@ -60,8 +63,8 @@ const useShopper = () => {
       lineItem: PartialDeep<LineItem>;
     }) => await Cart.PatchLineItem(ID, lineItem),
     onSuccess: () => {
-      if (autoApplyPromotions) applyPromotions()
-      invalidateWorksheet()
+      if (autoApplyPromotions) applyPromotions();
+      invalidateWorksheet();
     },
   });
 
@@ -69,8 +72,8 @@ const useShopper = () => {
     mutationKey: ["deleteCartLineItem"],
     mutationFn: async (ID: string) => await Cart.DeleteLineItem(ID),
     onSuccess: () => {
-      if (autoApplyPromotions) applyPromotions()
-      invalidateWorksheet()
+      if (autoApplyPromotions) applyPromotions();
+      invalidateWorksheet();
     },
   });
 
@@ -99,7 +102,27 @@ const useShopper = () => {
       await Cart.Submit();
       return;
     },
-    onSuccess: () => invalidateWorksheet(),
+    onSuccess: async () => {
+      const token = await Tokens.GetValidToken();
+      const isAnon = isAnonToken(token);
+      if (isAnon) {
+        try {
+          const { access_token, refresh_token } = await Auth.Anonymous(
+            clientId,
+            scope,
+            customScope
+          );
+
+          Tokens.SetAccessToken(access_token);
+          Tokens.SetRefreshToken(refresh_token);
+          invalidateWorksheet();
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        invalidateWorksheet();
+      }
+    },
   });
 
   const { mutateAsync: deleteCart } = useAuthMutation({
@@ -120,7 +143,7 @@ const useShopper = () => {
       deleteCart,
       removeCartPromo,
       applyPromotions,
-      listEligiblePromotions
+      listEligiblePromotions,
     };
   }, [
     orderWorksheet,
@@ -134,7 +157,7 @@ const useShopper = () => {
     deleteCart,
     removeCartPromo,
     applyPromotions,
-    listEligiblePromotions
+    listEligiblePromotions,
   ]);
 };
 
