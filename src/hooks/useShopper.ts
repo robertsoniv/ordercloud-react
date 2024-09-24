@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from "react";
 import useAuthQuery from "./useAuthQuery";
 import {
-  Auth,
   Cart,
   LineItem,
   OrderCloudError,
@@ -16,7 +15,7 @@ import { queryClient, useOrderCloudContext } from "..";
 import { isAnonToken } from "../utils";
 
 const useShopper = () => {
-  const { autoApplyPromotions, clientId, scope, customScope } =
+  const { autoApplyPromotions, newAnonSession } =
     useOrderCloudContext();
 
   const invalidateWorksheet = useCallback(async () => {
@@ -105,25 +104,16 @@ const useShopper = () => {
     onSuccess: async () => {
       const token = await Tokens.GetValidToken();
       const isAnon = isAnonToken(token);
-      if (isAnon) {
-        try {
-          const { access_token, refresh_token } = await Auth.Anonymous(
-            clientId,
-            scope,
-            customScope
-          );
-
-          Tokens.SetAccessToken(access_token);
-          Tokens.SetRefreshToken(refresh_token);
-          invalidateWorksheet();
-        } catch (error) {
-          console.log(error);
-        }
-      } else {
+      if (!isAnon) {
         invalidateWorksheet();
       }
     },
   });
+
+  const continueShopping = useCallback( async () => {
+    await newAnonSession();
+    invalidateWorksheet();
+  }, [invalidateWorksheet, newAnonSession])
 
   const { mutateAsync: deleteCart } = useAuthMutation({
     mutationKey: ["deleteCart"],
@@ -140,6 +130,7 @@ const useShopper = () => {
       deleteCartLineItem,
       addCartPromo,
       submitCart,
+      continueShopping,
       deleteCart,
       removeCartPromo,
       applyPromotions,
@@ -154,6 +145,7 @@ const useShopper = () => {
     deleteCartLineItem,
     addCartPromo,
     submitCart,
+    continueShopping,
     deleteCart,
     removeCartPromo,
     applyPromotions,

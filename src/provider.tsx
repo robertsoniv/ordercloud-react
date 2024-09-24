@@ -102,6 +102,31 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     setIsLoggedIn(false);
   }, [allowAnonymous, clientId, scope, customScope, handleLogout]);
 
+  const newAnonSession = useCallback(async () => {
+    const token = await Tokens.GetValidToken();
+    const isAnon = isAnonToken(token);
+    if (isAnon) {
+      try {
+        const { access_token, refresh_token } = await Auth.Anonymous(
+          clientId,
+          scope,
+          customScope
+        );
+
+        Tokens.SetAccessToken(access_token);
+        Tokens.SetRefreshToken(refresh_token);
+        setIsAuthenticated(true);
+        setIsLoggedIn(false);
+      } catch (error) {
+        console.log(error);
+        setIsAuthenticated(false);
+        setIsLoggedIn(false);
+      }
+    } else {
+      console.warn("Improper useage of `newAnonSession`: User is not anonymous.");
+    }
+  }, [clientId, customScope, scope])
+
   useEffect(() => {
     Configuration.Set({
       cookieOptions: {
@@ -143,6 +168,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       allowAnonymous,
       isAuthenticated,
       isLoggedIn,
+      newAnonSession,
       token,
       xpSchemas,
       autoApplyPromotions,
@@ -158,6 +184,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     allowAnonymous,
     isAuthenticated,
     isLoggedIn,
+    newAnonSession,
     token,
     xpSchemas,
     autoApplyPromotions,

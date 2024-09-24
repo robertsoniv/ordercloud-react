@@ -23,6 +23,13 @@ export interface IOrderCloudContext {
    */
   login: (username:string, password:string, rememberMe?:boolean) => Promise<AccessToken>;
 
+  /**
+   * If anonymous, this will retrieve a new anon token, useful for anonymous
+   * users who want to submit more than one order.
+   * @returns empty promise
+   */
+  newAnonSession: () => Promise<void>;
+
   baseApiUrl: string;
   clientId: string;
   scope: ApiRole[];
