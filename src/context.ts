@@ -9,7 +9,9 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   login: async (username: string, password: string, rememberMe?: boolean) => {
     return Promise.reject({username, password, rememberMe})
   },
-
+  newAnonSession: async () => {
+    return Promise.reject();
+  },
   baseApiUrl: "https://api.ordercloud.io/v1",
   clientId: "",
   scope: [],

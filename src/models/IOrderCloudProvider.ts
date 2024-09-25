@@ -8,8 +8,8 @@ export interface IOrderCloudProvider {
     scope: ApiRole[];
     customScope: string[];
     allowAnonymous: boolean;
-    xpSchemas?: OpenAPIV3.SchemaObject,
-    autoApplyPromotions: boolean,
+    xpSchemas?: OpenAPIV3.SchemaObject;
+    autoApplyPromotions?: boolean,
     defaultErrorHandler?: (error:OrderCloudError, context:Omit<IOrderCloudContext, "defaultErrorHandler">) => void
   }
   
