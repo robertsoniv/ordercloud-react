@@ -9,8 +9,7 @@ export interface IOrderCloudProvider {
     customScope: string[];
     allowAnonymous: boolean;
     xpSchemas?: OpenAPIV3.SchemaObject;
-    newAnonSession: () => Promise<void>;
-    autoApplyPromotions: boolean,
+    autoApplyPromotions?: boolean,
     defaultErrorHandler?: (error:OrderCloudError, context:Omit<IOrderCloudContext, "defaultErrorHandler">) => void
   }
   
