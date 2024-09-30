@@ -33,7 +33,7 @@ export function useOcResourceList<TData>(
   queryOptions?: Omit<UseOcQueryOptions, "queryKey">
 ) {
   const { listOperation } = useOperations(resource);
-  if(!listOperation) throwOperationNotFoundError("List", resource)
+  if(!listOperation && !queryOptions?.disabled) throwOperationNotFoundError("List", resource)
 
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
@@ -66,7 +66,7 @@ export function useOcResourceListWithFacets<TData>(
   queryOptions?: Omit<UseOcQueryOptions, "queryKey">
 ) {
   const { listOperation } = useOperations(resource);
-  if(!listOperation) throwOperationNotFoundError("List", resource)
+  if(!listOperation && !queryOptions?.disabled) throwOperationNotFoundError("List", resource)
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
 
@@ -100,7 +100,7 @@ export function useOcResourceGet<TData>(
   queryOptions?: Omit<UseOcQueryOptions, "queryKey">
 ) {
   const { getOperation } = useOperations(resource);
-  if(!getOperation) throwOperationNotFoundError("Get", resource)
+  if(!getOperation && !queryOptions?.disabled) throwOperationNotFoundError("Get", resource)
   const { baseApiUrl, token } = useOrderCloudContext();
   const url = getRoutingUrl(getOperation, parameters);
 
@@ -131,7 +131,7 @@ export function useMutateOcResource<TData>(
     useOperations(resource);
   const { baseApiUrl, token } = useOrderCloudContext();
   const operation = isNew && createOperation ? createOperation : saveOperation;
-  if(!operation) throwOperationNotFoundError(isNew ? 'Create' : 'Save', resource)
+  if(!operation && !mutationOptions?.disabled) throwOperationNotFoundError(isNew ? 'Create' : 'Save', resource)
 
   const url = getRoutingUrl(operation, parameters);
   const axiosRequest: AxiosRequestConfig = {
@@ -183,7 +183,7 @@ export function useDeleteOcResource<TData>(
   const { deleteOperation, listOperation, getOperation } = useOperations(
     resource
   );
-  if(!deleteOperation) throwOperationNotFoundError("Delete", resource)
+  if(!deleteOperation && !mutationOptions?.disabled) throwOperationNotFoundError("Delete", resource)
 
   const { columnHeaders } = useColumns(resource);
   const { baseApiUrl, token } = useOrderCloudContext();
@@ -246,7 +246,8 @@ export function useListAssignments<TData>(
     resource,
     operationInclusion
   );
-  if(!assignmentListOperation) throwOperationNotFoundError("List Assignment", resource)
+
+  if(!assignmentListOperation && !queryOptions?.disabled) throwOperationNotFoundError("List Assignment", resource)
 
   const queryString = makeQueryString(listOptions);
   const { baseApiUrl, token } = useOrderCloudContext();
@@ -283,7 +284,7 @@ export function useMutateAssignment<TData>(
     resource,
     operationInclusion
   );
-  if(!assignmentSaveOperation) throwOperationNotFoundError("Save Assignment", resource)
+  if(!assignmentSaveOperation && !mutationOptions?.disabled) throwOperationNotFoundError("Save Assignment", resource)
 
   const { baseApiUrl, token } = useOrderCloudContext();
   const url = getRoutingUrl(assignmentSaveOperation, parameters);
@@ -322,7 +323,7 @@ export function useDeleteAssignment<TData = unknown>(
     resource,
     operationInclusion
   );
-  if(!assignmentDeleteOperation) throwOperationNotFoundError("Delete Assignment", resource)
+  if(!assignmentDeleteOperation && !mutationOptions?.disabled) throwOperationNotFoundError("Delete Assignment", resource)
   const { baseApiUrl, token } = useOrderCloudContext();
   let queryString;
   if (parameters) {
