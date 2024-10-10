@@ -9,6 +9,9 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   login: async (username: string, password: string, rememberMe?: boolean) => {
     return Promise.reject({username, password, rememberMe})
   },
+  setToken: async (accessToken: string ) => {
+    return Promise.reject({accessToken})
+  },
   newAnonSession: async () => {
     return Promise.reject();
   },
@@ -19,7 +22,8 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   allowAnonymous: false,
   token: undefined,
   autoApplyPromotions: false,
-  xpSchemas: {} as OpenAPIV3.SchemaObject
+  xpSchemas: {} as OpenAPIV3.SchemaObject,
+  authLoading: true
 };
 
 export const OrderCloudContext = createContext<IOrderCloudContext>(

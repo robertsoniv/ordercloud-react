@@ -34,6 +34,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState<string | undefined>();
+  const [authLoading, setAuthLoading] = useState(true);
 
   const handleLogout = useCallback(() => {
     queryClient.clear();
@@ -42,10 +43,12 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     setToken(undefined);
     Tokens.RemoveAccessToken();
     Tokens.RemoveRefreshToken();
+    setAuthLoading(false);
   }, []);
 
   const handleLogin = useCallback(
     async (username: string, password: string, rememberMe?: boolean) => {
+      setAuthLoading(true);
       try {
         const response = await Auth.Login(
           username,
@@ -63,6 +66,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         setIsAuthenticated(true);
         setIsLoggedIn(true);
         queryClient.clear();
+        setAuthLoading(false);
         return response;
       } catch (ex) {
         return Promise.reject(ex as OrderCloudError);
@@ -71,36 +75,47 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     [clientId, scope, customScope]
   );
 
-  const verifyToken = useCallback(async () => {
-    const token = await Tokens.GetValidToken();
+  const verifyToken = useCallback(
+    async (accessToken?: string) => {
+      setAuthLoading(true);
+      if (accessToken) {
+        Tokens.SetAccessToken(accessToken);
+        Tokens.RemoveRefreshToken();
+      }
+      const token = await Tokens.GetValidToken();
 
-    if (token) {
-      const isAnon = isAnonToken(token);
-      if (isAnon && !allowAnonymous) {
-        handleLogout();
+      if (token) {
+        const isAnon = isAnonToken(token);
+        if (isAnon && !allowAnonymous) {
+          handleLogout();
+          return;
+        }
+        setIsAuthenticated(true);
+        setToken(token);
+        if (!isAnon) setIsLoggedIn(true);
+        setAuthLoading(false);
         return;
       }
+
+      if (!allowAnonymous) {
+        setAuthLoading(false);
+        return;
+      }
+
+      const { access_token, refresh_token } = await Auth.Anonymous(
+        clientId,
+        scope,
+        customScope
+      );
+
+      Tokens.SetAccessToken(access_token);
+      Tokens.SetRefreshToken(refresh_token);
       setIsAuthenticated(true);
-      setToken(token);
-      if (!isAnon) setIsLoggedIn(true);
-      return;
-    }
-
-    if (!allowAnonymous) {
-      return;
-    }
-
-    const { access_token, refresh_token } = await Auth.Anonymous(
-      clientId,
-      scope,
-      customScope
-    );
-
-    Tokens.SetAccessToken(access_token);
-    Tokens.SetRefreshToken(refresh_token);
-    setIsAuthenticated(true);
-    setIsLoggedIn(false);
-  }, [allowAnonymous, clientId, scope, customScope, handleLogout]);
+      setIsLoggedIn(false);
+      setAuthLoading(false);
+    },
+    [allowAnonymous, clientId, scope, customScope, handleLogout]
+  );
 
   const newAnonSession = useCallback(async () => {
     const token = await Tokens.GetValidToken();
@@ -123,9 +138,11 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         setIsLoggedIn(false);
       }
     } else {
-      console.warn("Improper useage of `newAnonSession`: User is not anonymous.");
+      console.warn(
+        "Improper useage of `newAnonSession`: User is not anonymous."
+      );
     }
-  }, [clientId, customScope, scope])
+  }, [clientId, customScope, scope]);
 
   useEffect(() => {
     Configuration.Set({
@@ -159,6 +176,13 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     }
   }, [baseApiUrl, clientId, isAuthenticated, verifyToken]);
 
+  const handleProvidedToken = useCallback(
+    async (accessToken: string) => {
+      await verifyToken(accessToken);
+    },
+    [verifyToken]
+  );
+
   const ordercloudContext = useMemo(() => {
     return {
       baseApiUrl,
@@ -172,8 +196,10 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       token,
       xpSchemas,
       autoApplyPromotions,
+      authLoading,
       logout: handleLogout,
       login: handleLogin,
+      setToken: handleProvidedToken,
       defaultErrorHandler,
     };
   }, [
@@ -188,8 +214,10 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     token,
     xpSchemas,
     autoApplyPromotions,
+    authLoading,
     handleLogout,
     handleLogin,
+    handleProvidedToken,
     defaultErrorHandler,
   ]);
 

@@ -22,6 +22,14 @@ export interface IOrderCloudContext {
    * authenticates using the configured client ID and username / password
    */
   login: (username:string, password:string, rememberMe?:boolean) => Promise<AccessToken>;
+  /**
+   * authenticates using the provided OrderCloud access token
+   */
+  setToken: (accessToken: string ) => void;
+  /**
+   * Signifies when authorization is in a loading state
+   */
+  authLoading: boolean
 
   /**
    * If anonymous, this will retrieve a new anon token, useful for anonymous
