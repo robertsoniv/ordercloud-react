@@ -71,36 +71,39 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     [clientId, scope, customScope]
   );
 
-  const verifyToken = useCallback(async () => {
-    const token = await Tokens.GetValidToken();
+  const verifyToken = useCallback(
+    async (accessToken?: string) => {
+      const token = await Tokens.GetValidToken(accessToken);
 
-    if (token) {
-      const isAnon = isAnonToken(token);
-      if (isAnon && !allowAnonymous) {
-        handleLogout();
+      if (token) {
+        const isAnon = isAnonToken(token);
+        if (isAnon && !allowAnonymous) {
+          handleLogout();
+          return;
+        }
+        setIsAuthenticated(true);
+        setToken(token);
+        if (!isAnon) setIsLoggedIn(true);
         return;
       }
+
+      if (!allowAnonymous) {
+        return;
+      }
+
+      const { access_token, refresh_token } = await Auth.Anonymous(
+        clientId,
+        scope,
+        customScope
+      );
+
+      Tokens.SetAccessToken(access_token);
+      Tokens.SetRefreshToken(refresh_token);
       setIsAuthenticated(true);
-      setToken(token);
-      if (!isAnon) setIsLoggedIn(true);
-      return;
-    }
-
-    if (!allowAnonymous) {
-      return;
-    }
-
-    const { access_token, refresh_token } = await Auth.Anonymous(
-      clientId,
-      scope,
-      customScope
-    );
-
-    Tokens.SetAccessToken(access_token);
-    Tokens.SetRefreshToken(refresh_token);
-    setIsAuthenticated(true);
-    setIsLoggedIn(false);
-  }, [allowAnonymous, clientId, scope, customScope, handleLogout]);
+      setIsLoggedIn(false);
+    },
+    [allowAnonymous, clientId, scope, customScope, handleLogout]
+  );
 
   const newAnonSession = useCallback(async () => {
     const token = await Tokens.GetValidToken();
@@ -123,9 +126,11 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         setIsLoggedIn(false);
       }
     } else {
-      console.warn("Improper useage of `newAnonSession`: User is not anonymous.");
+      console.warn(
+        "Improper useage of `newAnonSession`: User is not anonymous."
+      );
     }
-  }, [clientId, customScope, scope])
+  }, [clientId, customScope, scope]);
 
   useEffect(() => {
     Configuration.Set({
@@ -159,6 +164,15 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     }
   }, [baseApiUrl, clientId, isAuthenticated, verifyToken]);
 
+  const handleProvidedToken = useCallback(
+    async (accessToken: string) => {
+      await verifyToken(accessToken);
+      Tokens.SetAccessToken(accessToken)
+      Tokens.RemoveRefreshToken()
+    },
+    [verifyToken]
+  );
+
   const ordercloudContext = useMemo(() => {
     return {
       baseApiUrl,
@@ -174,6 +188,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       autoApplyPromotions,
       logout: handleLogout,
       login: handleLogin,
+      setToken: handleProvidedToken,
       defaultErrorHandler,
     };
   }, [
@@ -190,6 +205,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     autoApplyPromotions,
     handleLogout,
     handleLogin,
+    handleProvidedToken,
     defaultErrorHandler,
   ]);
 

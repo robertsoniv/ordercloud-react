@@ -9,6 +9,9 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   login: async (username: string, password: string, rememberMe?: boolean) => {
     return Promise.reject({username, password, rememberMe})
   },
+  setToken: async (accessToken: string ) => {
+    return Promise.reject({accessToken})
+  },
   newAnonSession: async () => {
     return Promise.reject();
   },
