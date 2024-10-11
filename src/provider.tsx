@@ -31,6 +31,14 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   autoApplyPromotions,
   defaultErrorHandler,
 }) => {
+  Configuration.Set({
+    cookieOptions: {
+      prefix: clientId,
+    },
+    baseApiUrl,
+    clientID: clientId,
+  });
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState<string | undefined>();
@@ -145,14 +153,6 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   }, [clientId, customScope, scope]);
 
   useEffect(() => {
-    Configuration.Set({
-      cookieOptions: {
-        prefix: clientId,
-      },
-      baseApiUrl,
-      clientID: clientId,
-    });
-
     if (!interceptorSetup) {
       axios.interceptors.request.use(
         async (config) => {
