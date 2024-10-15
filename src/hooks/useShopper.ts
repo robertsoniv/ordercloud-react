@@ -1,22 +1,23 @@
-import { useCallback, useMemo } from "react";
-import useAuthQuery from "./useAuthQuery";
+import { UseQueryResult } from "@tanstack/react-query";
 import {
+  Address,
   Cart,
   LineItem,
   OrderCloudError,
+  Orders,
   OrderWorksheet,
   PartialDeep,
   RequiredDeep,
   Tokens,
 } from "ordercloud-javascript-sdk";
-import { UseQueryResult } from "@tanstack/react-query";
-import useAuthMutation from "./useAuthMutation";
+import { useCallback, useMemo } from "react";
 import { queryClient, useOrderCloudContext } from "..";
 import { isAnonToken } from "../utils";
+import useAuthMutation from "./useAuthMutation";
+import useAuthQuery from "./useAuthQuery";
 
 const useShopper = () => {
-  const { autoApplyPromotions, newAnonSession } =
-    useOrderCloudContext();
+  const { autoApplyPromotions, newAnonSession } = useOrderCloudContext();
 
   const invalidateWorksheet = useCallback(async () => {
     queryClient.invalidateQueries({
@@ -76,6 +77,48 @@ const useShopper = () => {
     },
   });
 
+  const { mutateAsync: setShippingAddress } = useAuthMutation({
+    mutationKey: ["setShippingAddress"],
+    mutationFn: async (address: Address) =>
+      await Cart.SetShippingAddress(address),
+    onSuccess: () => {
+      if (autoApplyPromotions) applyPromotions();
+      invalidateWorksheet();
+    },
+  });
+
+  const { mutateAsync: setShippingAddressByID } = useAuthMutation({
+    mutationKey: ["setShippingAddressByID"],
+    mutationFn: async (addressID: string) => {
+      if (!orderWorksheet)
+        return Promise.reject("Order worksheet was not retrieved yet.");
+      return await Orders.Patch("Outgoing", orderWorksheet?.Order.ID, {
+        ShippingAddressID: addressID,
+      });
+    },
+    onSuccess: () => {
+      if (autoApplyPromotions) applyPromotions();
+      invalidateWorksheet();
+    },
+  });
+
+  // const { mutateAsync: clearShipping } = useAuthMutation({
+  //   mutationKey: ["clearShipping"],
+  //   mutationFn: async (addressID: string) => {
+  //     if (!orderWorksheet)
+  //       return Promise.reject("Order worksheet was not retrieved yet.");
+  //     //TODO: unsure about how to do this using the SDK
+  //     // return await Orders.Patch("Outgoing", orderWorksheet?.Order.ID, {
+  //     //   ShippingAddressID: null,
+  //     //   ShippingAddress: null
+  //     // });
+  //   },
+  //   onSuccess: () => {
+  //     if (autoApplyPromotions) applyPromotions();
+  //     invalidateWorksheet();
+  //   },
+  // });
+
   const { mutateAsync: addCartPromo } = useAuthMutation({
     mutationKey: ["addCartPromo"],
     mutationFn: async (promoCode: string) => await Cart.AddPromotion(promoCode),
@@ -110,10 +153,10 @@ const useShopper = () => {
     },
   });
 
-  const continueShopping = useCallback( async () => {
+  const continueShopping = useCallback(async () => {
     await newAnonSession();
     invalidateWorksheet();
-  }, [invalidateWorksheet, newAnonSession])
+  }, [invalidateWorksheet, newAnonSession]);
 
   const { mutateAsync: deleteCart } = useAuthMutation({
     mutationKey: ["deleteCart"],
@@ -128,6 +171,8 @@ const useShopper = () => {
       addCartLineItem,
       patchCartLineItem,
       deleteCartLineItem,
+      setShippingAddress,
+      setShippingAddressByID,
       addCartPromo,
       submitCart,
       continueShopping,
@@ -143,6 +188,8 @@ const useShopper = () => {
     addCartLineItem,
     patchCartLineItem,
     deleteCartLineItem,
+    setShippingAddress,
+    setShippingAddressByID,
     addCartPromo,
     submitCart,
     continueShopping,
