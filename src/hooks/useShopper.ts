@@ -168,6 +168,7 @@ const useShopper = () => {
     return {
       orderWorksheet,
       worksheetLoading: isPending || isLoading,
+      refreshWorksheet: invalidateWorksheet,
       addCartLineItem,
       patchCartLineItem,
       deleteCartLineItem,
@@ -185,6 +186,7 @@ const useShopper = () => {
     orderWorksheet,
     isPending,
     isLoading,
+    invalidateWorksheet,
     addCartLineItem,
     patchCartLineItem,
     deleteCartLineItem,
