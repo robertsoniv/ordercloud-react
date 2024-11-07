@@ -102,6 +102,31 @@ const useShopper = () => {
     },
   });
 
+  const { mutateAsync: setBillingAddress } = useAuthMutation({
+    mutationKey: ["setBillingAddress"],
+    mutationFn: async (address: Address) =>
+      await Cart.SetBillingAddress(address),
+    onSuccess: () => {
+      if (autoApplyPromotions) applyPromotions();
+      invalidateWorksheet();
+    },
+  });
+
+  const { mutateAsync: setBillingAddressByID } = useAuthMutation({
+    mutationKey: ["setBillingAddressByID"],
+    mutationFn: async (addressID: string) => {
+      if (!orderWorksheet)
+        return Promise.reject("Order worksheet was not retrieved yet.");
+      return await Orders.Patch("Outgoing", orderWorksheet?.Order.ID, {
+        BillingAddressID: addressID,
+      });
+    },
+    onSuccess: () => {
+      if (autoApplyPromotions) applyPromotions();
+      invalidateWorksheet();
+    },
+  });
+
   // const { mutateAsync: clearShipping } = useAuthMutation({
   //   mutationKey: ["clearShipping"],
   //   mutationFn: async (addressID: string) => {
@@ -174,6 +199,8 @@ const useShopper = () => {
       deleteCartLineItem,
       setShippingAddress,
       setShippingAddressByID,
+      setBillingAddress,
+      setBillingAddressByID,
       addCartPromo,
       submitCart,
       continueShopping,
@@ -192,6 +219,8 @@ const useShopper = () => {
     deleteCartLineItem,
     setShippingAddress,
     setShippingAddressByID,
+    setBillingAddress,
+    setBillingAddressByID,
     addCartPromo,
     submitCart,
     continueShopping,
