@@ -2,9 +2,11 @@ import { UseQueryResult } from "@tanstack/react-query";
 import {
   Address,
   Cart,
+  IntegrationEvents,
   LineItem,
   OrderCloudError,
   Orders,
+  OrderShipMethodSelection,
   OrderWorksheet,
   PartialDeep,
   RequiredDeep,
@@ -112,6 +114,41 @@ const useShopper = () => {
     },
   });
 
+  const { mutateAsync: estimateShipping } = useAuthMutation({
+    mutationKey: ["estimateShipping"],
+    mutationFn: async () => {
+      if (!orderWorksheet) {
+        return Promise.reject("Order worksheet was not retrieved yet.");
+      }
+      return await IntegrationEvents.EstimateShipping(
+        "Outgoing",
+        orderWorksheet.Order.ID
+      );
+    },
+    onSuccess: () => {
+      if (autoApplyPromotions) applyPromotions();
+      invalidateWorksheet();
+    },
+  });
+
+  const { mutateAsync: selectShipMethods } = useAuthMutation({
+    mutationKey: ["selectShipMethods"],
+    mutationFn: async (selection:OrderShipMethodSelection) => {
+      if (!orderWorksheet) {
+        return Promise.reject("Order worksheet was not retrieved yet.");
+      }
+      return await IntegrationEvents.SelectShipmethods(
+        "Outgoing",
+        orderWorksheet.Order.ID,
+        selection
+      );
+    },
+    onSuccess: () => {
+      if (autoApplyPromotions) applyPromotions();
+      invalidateWorksheet();
+    },
+  });
+
   const { mutateAsync: setBillingAddressByID } = useAuthMutation({
     mutationKey: ["setBillingAddressByID"],
     mutationFn: async (addressID: string) => {
@@ -163,6 +200,19 @@ const useShopper = () => {
     onSuccess: () => invalidateWorksheet(),
   });
 
+  const { mutateAsync: calculateOrder } = useAuthMutation({
+    mutationKey: ["calculateOrder"],
+    mutationFn: async () => {
+      if (!orderWorksheet)
+        return Promise.reject("Order worksheet was not retrieved yet.");
+      return await IntegrationEvents.Calculate('Outgoing', orderWorksheet.Order.ID);
+    },
+    onSuccess: async () => {
+      if (autoApplyPromotions) applyPromotions();
+      invalidateWorksheet();
+    },
+  });
+
   const { mutateAsync: submitCart } = useAuthMutation({
     mutationKey: ["submitCart"],
     mutationFn: async () => {
@@ -199,9 +249,12 @@ const useShopper = () => {
       deleteCartLineItem,
       setShippingAddress,
       setShippingAddressByID,
+      estimateShipping,
+      selectShipMethods,
       setBillingAddress,
       setBillingAddressByID,
       addCartPromo,
+      calculateOrder,
       submitCart,
       continueShopping,
       deleteCart,
@@ -219,9 +272,12 @@ const useShopper = () => {
     deleteCartLineItem,
     setShippingAddress,
     setShippingAddressByID,
+    estimateShipping,
+    selectShipMethods,
     setBillingAddress,
     setBillingAddressByID,
     addCartPromo,
+    calculateOrder,
     submitCart,
     continueShopping,
     deleteCart,
