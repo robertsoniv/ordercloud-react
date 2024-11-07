@@ -15,7 +15,7 @@ export type UseOcMutationOptions<TData = unknown, TError = DefaultError, TVariab
 export default function useAuthMutation<
   TData = unknown,
   TError = unknown,
-  TVariables = TData,
+  TVariables = void,
   TContext = unknown
 >(
   options: UseOcMutationOptions<TData, TError, TVariables, TContext>

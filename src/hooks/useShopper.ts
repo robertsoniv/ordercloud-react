@@ -120,11 +120,10 @@ const useShopper = () => {
       if (!orderWorksheet) {
         return Promise.reject("Order worksheet was not retrieved yet.");
       }
-      await IntegrationEvents.EstimateShipping(
+      return await IntegrationEvents.EstimateShipping(
         "Outgoing",
         orderWorksheet.Order.ID
       );
-      return;
     },
     onSuccess: () => {
       if (autoApplyPromotions) applyPromotions();
@@ -138,12 +137,11 @@ const useShopper = () => {
       if (!orderWorksheet) {
         return Promise.reject("Order worksheet was not retrieved yet.");
       }
-      await IntegrationEvents.SelectShipmethods(
+      return await IntegrationEvents.SelectShipmethods(
         "Outgoing",
         orderWorksheet.Order.ID,
         selection
       );
-      return;
     },
     onSuccess: () => {
       if (autoApplyPromotions) applyPromotions();
@@ -207,8 +205,7 @@ const useShopper = () => {
     mutationFn: async () => {
       if (!orderWorksheet)
         return Promise.reject("Order worksheet was not retrieved yet.");
-      await IntegrationEvents.Calculate('Outgoing', orderWorksheet.Order.ID);
-      return;
+      return await IntegrationEvents.Calculate('Outgoing', orderWorksheet.Order.ID);
     },
     onSuccess: async () => {
       if (autoApplyPromotions) applyPromotions();
