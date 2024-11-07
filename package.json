@@ -1,7 +1,7 @@
 {
   "name": "@rwatt451/ordercloud-react",
   "private": false,
-  "version": "0.0.32",
+  "version": "0.0.33",
   "type": "module",
   "files": [
     "package.json",
@@ -55,6 +55,6 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
     "vite": "^5.1.4",
-    "vite-plugin-dts": "^3.7.3"
+    "vite-plugin-dts": "^4.3.0"
   }
 }
