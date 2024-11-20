@@ -1,4 +1,4 @@
-import { ApiRole, OrderCloudError } from "ordercloud-javascript-sdk";
+import { ApiRole, OrderCloudError, SdkConfiguration } from "ordercloud-javascript-sdk";
 import { IOrderCloudContext } from "./IOrderCloudContext";
 import { OpenAPIV3 } from "openapi-types";
 
@@ -10,6 +10,7 @@ export interface IOrderCloudProvider {
     allowAnonymous: boolean;
     xpSchemas?: OpenAPIV3.SchemaObject;
     autoApplyPromotions?: boolean,
+    configurationOverrides?: Omit<SdkConfiguration, 'baseApiUrl' | 'clientID'>
     defaultErrorHandler?: (error:OrderCloudError, context:Omit<IOrderCloudContext, "defaultErrorHandler">) => void
   }
   
