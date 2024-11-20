@@ -29,15 +29,23 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   allowAnonymous,
   xpSchemas,
   autoApplyPromotions,
+  configurationOverrides,
   defaultErrorHandler,
 }) => {
-  Configuration.Set({
-    cookieOptions: {
-      prefix: clientId,
-    },
-    baseApiUrl,
-    clientID: clientId,
-  });
+  const ocConfig = useMemo(() => {
+    const { cookieOptions, ...rest } = configurationOverrides || {};
+    return {
+      cookieOptions: {
+        prefix: clientId,
+        ...cookieOptions,
+      },
+      baseApiUrl,
+      clientID: clientId,
+      ...rest,
+    };
+  }, [baseApiUrl, clientId, configurationOverrides]);
+
+  Configuration.Set(ocConfig);
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
