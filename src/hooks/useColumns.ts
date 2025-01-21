@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { OpenAPIV3 } from 'openapi-types';
 import { useOrderCloudContext } from '.';
-import { sortBy } from 'lodash';
+import { sortBy, get } from 'lodash';
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import { RequiredDeep } from 'ordercloud-javascript-sdk';
 import { getRequiredParamsInPath } from '../utils';
@@ -87,7 +87,7 @@ const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (ce
             ? accessorString
             : key;
         cols.push(
-          columnHelper.accessor(accessorString, {
+          columnHelper.accessor(row => get(row, accessorString), {
             id: accessorString,
             header,
             enableResizing: true,
