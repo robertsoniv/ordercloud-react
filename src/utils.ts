@@ -86,12 +86,10 @@ export const makeQueryString = (params: ServiceListOptions | undefined) => {
       } else {
         if (typeof val === 'object' && (key === 'searchOn' || key === 'sortBy')) {
           return `${key}=${val.map(encodeURIComponent).join(',')}`
-        } else if (typeof val === 'object') {
-          return val
-            .map((v: any) => {
-              return `${key}=${encodeURIComponent(v)}`
-            })
-            .join('&')
+        } else if (typeof val === "object") {
+          return `${key}=${val
+            .map((v: string) => encodeURIComponent(v))
+            .join("|")}`
         } else {
           return `${key}=${encodeURIComponent(val)}`
         }
