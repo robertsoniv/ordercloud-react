@@ -11,6 +11,7 @@ export interface IOrderCloudProvider {
     xpSchemas?: OpenAPIV3.SchemaObject;
     autoApplyPromotions?: boolean,
     configurationOverrides?: Omit<SdkConfiguration, 'baseApiUrl' | 'clientID'>
+    currencyDefaults?: { currencyCode: string, language: string }
     defaultErrorHandler?: (error:OrderCloudError, context:Omit<IOrderCloudContext, "defaultErrorHandler">) => void
   }
   

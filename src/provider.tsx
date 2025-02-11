@@ -30,6 +30,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
   xpSchemas,
   autoApplyPromotions,
   configurationOverrides,
+  currencyDefaults = { currencyCode: "USD", language: "en-US" },
   defaultErrorHandler,
 }) => {
   const ocConfig = useMemo(() => {
@@ -205,6 +206,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       xpSchemas,
       autoApplyPromotions,
       authLoading,
+      currencyDefaults,
       logout: handleLogout,
       login: handleLogin,
       setToken: handleProvidedToken,
@@ -223,6 +225,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     xpSchemas,
     autoApplyPromotions,
     authLoading,
+    currencyDefaults,
     handleLogout,
     handleLogin,
     handleProvidedToken,
