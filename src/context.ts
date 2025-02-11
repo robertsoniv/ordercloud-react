@@ -23,7 +23,8 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   token: undefined,
   autoApplyPromotions: false,
   xpSchemas: {} as OpenAPIV3.SchemaObject,
-  authLoading: true
+  authLoading: true,
+  currencyDefaults: {} as { currencyCode: string, language: string }
 };
 
 export const OrderCloudContext = createContext<IOrderCloudContext>(

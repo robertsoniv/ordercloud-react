@@ -324,7 +324,7 @@ The OrderCloud resource name used for generating column information.
 #### **sortOrder**: `string[]`
 An **optional** list that will be used to sort table header order if provided.
 
-#### **cellCallback**: `(cellValue: unknown, properties: unknown) => JSX.Element`
+#### **cellCallback**: `(info: CellContext<unknown, unknown>, properties: OpenAPIV3.SchemaObject, resourceId: string) => JSX.Element`
 An **optional** callback for defining custom elements for `@tanstack/react-table` table cells by data type.
 
 ## `useOcForm()` hook

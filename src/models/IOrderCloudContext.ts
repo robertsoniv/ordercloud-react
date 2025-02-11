@@ -47,4 +47,5 @@ export interface IOrderCloudContext {
   token?: string;
   xpSchemas?: OpenAPIV3.SchemaObject;
   autoApplyPromotions?: boolean;
+  currencyDefaults: { currencyCode: string, language: string }
 }

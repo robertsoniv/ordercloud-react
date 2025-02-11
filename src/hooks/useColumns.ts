@@ -2,14 +2,14 @@ import { useCallback, useMemo } from 'react'
 import { OpenAPIV3 } from 'openapi-types';
 import { useOrderCloudContext } from '.';
 import { sortBy, get } from 'lodash';
-import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
+import { CellContext, ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import { RequiredDeep } from 'ordercloud-javascript-sdk';
 import { getRequiredParamsInPath } from '../utils';
 import useOperations from './useOperations';
 
 const columnHelper = createColumnHelper<RequiredDeep<unknown>>();
 
-const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (cellValue: unknown, properties: OpenAPIV3.SchemaObject) => JSX.Element) => {
+const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (info: CellContext<unknown, unknown>, properties: OpenAPIV3.SchemaObject, resourceId: string) => JSX.Element) => {
   const { xpSchemas } = useOrderCloudContext()
   const { listOperation: operation, deleteOperation, assignmentListOperation} = useOperations(resourceId)
 
@@ -92,9 +92,8 @@ const useColumns = (resourceId: string, sortOrder?: string[], cellCallback?: (ce
             header,
             enableResizing: true,
             enableSorting: sortable?.includes(accessorString),
-            cell: (info) => {
-              const cellValue = info.getValue();
-              return cellCallback(cellValue, value)
+            cell: (info: CellContext<unknown, unknown>) => {
+              return cellCallback(info, value, resourceId) 
             }
           }) as ColumnDef<unknown, unknown>
         );
