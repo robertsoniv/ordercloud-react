@@ -1,5 +1,6 @@
 # DEPRECATED
 THIS REPOSITORY IS NO LONGER MAINTAINED. NEW LOCATION IS [ordercloud-api/ordercloud-react-sdk](https://github.com/ordercloud-api/ordercloud-react-sdk)
+
 NEW PACKAGE SCOPE/LOCATION IS AVAILABLE VIA `npm i @ordercloud/react-sdk`.
 
 ISSUES SUBMITTED ON THIS REPOSITORY WILL BE IGRNORED.
