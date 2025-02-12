@@ -1,3 +1,9 @@
+# DEPRECATED
+THIS REPOSITORY IS NO LONGER MAINTAINED. NEW LOCATION IS [ordercloud-api/ordercloud-react-sdk](https://github.com/ordercloud-api/ordercloud-react-sdk)
+NEW PACKAGE SCOPE/LOCATION IS AVAILABLE VIA `npm i @ordercloud/react-sdk`.
+
+ISSUES SUBMITTED ON THIS REPOSITORY WILL BE IGRNORED.
+
 # OrderCloud React
 This is a developer library for OrderCloud developers utilizing React for their frontend development. It is essentially a wrapper for Tanstack query, which provides a lot of good functionality out of the box for background refreshes, request de-duplication, and caching. You configure your API client settings on the `OrderCloudProvider` which will provide you with a global context accessible though the `useOrderCloudContext()` hook. In addition to this context hook, it provides "authenticated" versions of `useQuery` and `useMutation` for reading and manipulating OrderCloud data in an efficient manner.
 
