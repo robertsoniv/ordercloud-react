@@ -2,23 +2,19 @@ import { useCallback, useMemo } from "react";
 import useApiSpec from "./useApiSpec";
 import Case from "case";
 
-const useOperations = (
-  resource: string,
-  operationInclusion?: string
-) => {
+const useOperations = (resource: string, operationInclusion?: string) => {
   const { operationsById } = useApiSpec();
-  const isMeEndpoint = useMemo(()=> resource.includes('Me.'),[resource])
-  const resourceName = useMemo(
-    () => {
-      const resourceName = isMeEndpoint ? resource.replace("Me.", "") : resource
-      return resourceName.charAt(0).toUpperCase() + Case.camel(resourceName.slice(1))
-    },
-    [isMeEndpoint, resource]
-  );
+  const isMeEndpoint = useMemo(() => resource.includes("Me."), [resource]);
+  const resourceName = useMemo(() => {
+    const resourceName = isMeEndpoint ? resource.replace("Me.", "") : resource;
+    return (
+      resourceName.charAt(0).toUpperCase() + Case.camel(resourceName.slice(1))
+    );
+  }, [isMeEndpoint, resource]);
 
   const tryGetOperation = useCallback(
     (operationId: string) => operationsById[operationId],
-    [operationsById]
+    [operationsById],
   );
 
   const listOperation = useMemo(() => {

@@ -13,7 +13,7 @@ export const isAnonToken = (token: string) => {
 };
 
 export const getRoles = (token: string) => {
-  if(!token) return undefined
+  if (!token) return undefined;
   const parsed = jwtDecode<DecodedToken>(token);
   return parsed.role;
 };
@@ -33,39 +33,39 @@ export const isRouteParam = (operation: any, paramName: string) => {
     operation.parameters &&
     operation.parameters
       .filter((param: any) => {
-        return param.in === 'path'
+        return param.in === "path";
       })
       .map((param: any) => param.name)
       .includes(paramName)
-  )
-}
+  );
+};
 
-export const getRoutingUrl = (operation: any, params: any)=> {
-  let url = operation?.path
-  if(!url) return ""
-  const paramsTest = params
-  if (url.indexOf('{') > -1) {
+export const getRoutingUrl = (operation: any, params: any) => {
+  let url = operation?.path;
+  if (!url) return "";
+  const paramsTest = params;
+  if (url.indexOf("{") > -1) {
     Object.entries(paramsTest)
       .filter(([key]: [string, any]) => {
-        return isRouteParam(operation, key)
+        return isRouteParam(operation, key);
       })
       .forEach(([key, value]: [string, any]) => {
         if (value) {
-          url = url.replace(`{${key}}`, value)
+          url = url.replace(`{${key}}`, value);
         }
-      })
-    return url
+      });
+    return url;
   }
-  return url
-}
+  return url;
+};
 
 export const makeQueryString = (params: ServiceListOptions | undefined) => {
-  if(!params) return
+  if (!params) return;
   return `${Object.entries(params)
     .filter(([, val]: [string, any]) => {
-      return typeof val === 'object'
+      return typeof val === "object"
         ? Boolean(val.length) || Boolean(Object.values(val).length)
-        : Boolean(val)
+        : Boolean(val);
     })
     .map(([key, val]: [string, any]) => {
       /**
@@ -74,37 +74,39 @@ export const makeQueryString = (params: ServiceListOptions | undefined) => {
        * we know that searchOn & sortBy are supposed have 1 key - but there could
        * be others (right now, or in the future)
        */
-      if (key === 'filters') {
+      if (key === "filters") {
         return Object.entries(val)
           .filter(([fkey, fval]: [string, any]) => {
-            return fkey.length && fval.length
+            return fkey.length && fval.length;
           })
           .map(([fkey, fval]: [string, any]) => {
-            return `${fkey}=${encodeURIComponent(fval)}`
+            return `${fkey}=${encodeURIComponent(fval)}`;
           })
-          .join('&')
+          .join("&");
       } else {
-        if (typeof val === 'object' && (key === 'searchOn' || key === 'sortBy')) {
-          return `${key}=${val.map(encodeURIComponent).join(',')}`
+        if (
+          typeof val === "object" &&
+          (key === "searchOn" || key === "sortBy")
+        ) {
+          return `${key}=${val.map(encodeURIComponent).join(",")}`;
         } else if (typeof val === "object") {
           return `${key}=${val
             .map((v: string) => encodeURIComponent(v))
-            .join("|")}`
+            .join("|")}`;
         } else {
-          return `${key}=${encodeURIComponent(val)}`
+          return `${key}=${encodeURIComponent(val)}`;
         }
       }
     })
-    .join('&')}`
-}
+    .join("&")}`;
+};
 
 export const getRequiredParamsInPath = (getOperation: any) => {
   const result =
     getOperation && getOperation?.parameters
-      ? getOperation.parameters.filter((p: any) => p.in === 'path' && p.required).map((p: any) => p.name)
-      : []
-  return result
-}
-
-
-
+      ? getOperation.parameters
+          .filter((p: any) => p.in === "path" && p.required)
+          .map((p: any) => p.name)
+      : [];
+  return result;
+};

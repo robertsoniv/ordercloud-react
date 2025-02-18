@@ -7,10 +7,10 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   isLoggedIn: false,
   logout: () => {},
   login: async (username: string, password: string, rememberMe?: boolean) => {
-    return Promise.reject({username, password, rememberMe})
+    return Promise.reject({ username, password, rememberMe });
   },
-  setToken: async (accessToken: string ) => {
-    return Promise.reject({accessToken})
+  setToken: async (accessToken: string) => {
+    return Promise.reject({ accessToken });
   },
   newAnonSession: async () => {
     return Promise.reject();
@@ -24,9 +24,9 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
   autoApplyPromotions: false,
   xpSchemas: {} as OpenAPIV3.SchemaObject,
   authLoading: true,
-  currencyDefaults: {} as { currencyCode: string, language: string }
+  currencyDefaults: {} as { currencyCode: string; language: string },
 };
 
 export const OrderCloudContext = createContext<IOrderCloudContext>(
-  INITIAL_ORDERCLOUD_CONTEXT
+  INITIAL_ORDERCLOUD_CONTEXT,
 );

@@ -72,7 +72,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
           password,
           clientId,
           scope,
-          customScope
+          customScope,
         );
         const { access_token, refresh_token } = response;
         Tokens.SetAccessToken(access_token);
@@ -89,7 +89,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         return Promise.reject(ex as OrderCloudError);
       }
     },
-    [clientId, scope, customScope]
+    [clientId, scope, customScope],
   );
 
   const verifyToken = useCallback(
@@ -122,7 +122,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       const { access_token, refresh_token } = await Auth.Anonymous(
         clientId,
         scope,
-        customScope
+        customScope,
       );
 
       Tokens.SetAccessToken(access_token);
@@ -131,7 +131,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       setIsLoggedIn(false);
       setAuthLoading(false);
     },
-    [allowAnonymous, clientId, scope, customScope, handleLogout]
+    [allowAnonymous, clientId, scope, customScope, handleLogout],
   );
 
   const newAnonSession = useCallback(async () => {
@@ -142,7 +142,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         const { access_token, refresh_token } = await Auth.Anonymous(
           clientId,
           scope,
-          customScope
+          customScope,
         );
 
         Tokens.SetAccessToken(access_token);
@@ -156,7 +156,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
       }
     } else {
       console.warn(
-        "Improper useage of `newAnonSession`: User is not anonymous."
+        "Improper useage of `newAnonSession`: User is not anonymous.",
       );
     }
   }, [clientId, customScope, scope]);
@@ -174,7 +174,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
         function (error) {
           // Do something with request error
           return Promise.reject(error);
-        }
+        },
       );
     } else {
       interceptorSetup = true;
@@ -189,7 +189,7 @@ const OrderCloudProvider: FC<PropsWithChildren<IOrderCloudProvider>> = ({
     async (accessToken: string) => {
       await verifyToken(accessToken);
     },
-    [verifyToken]
+    [verifyToken],
   );
 
   const ordercloudContext = useMemo(() => {

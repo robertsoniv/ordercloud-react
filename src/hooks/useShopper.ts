@@ -122,7 +122,7 @@ const useShopper = () => {
       }
       return await IntegrationEvents.EstimateShipping(
         "Outgoing",
-        orderWorksheet.Order.ID
+        orderWorksheet.Order.ID,
       );
     },
     onSuccess: () => {
@@ -133,14 +133,14 @@ const useShopper = () => {
 
   const { mutateAsync: selectShipMethods } = useAuthMutation({
     mutationKey: ["selectShipMethods"],
-    mutationFn: async (selection:OrderShipMethodSelection) => {
+    mutationFn: async (selection: OrderShipMethodSelection) => {
       if (!orderWorksheet) {
         return Promise.reject("Order worksheet was not retrieved yet.");
       }
       return await IntegrationEvents.SelectShipmethods(
         "Outgoing",
         orderWorksheet.Order.ID,
-        selection
+        selection,
       );
     },
     onSuccess: () => {
@@ -205,7 +205,10 @@ const useShopper = () => {
     mutationFn: async () => {
       if (!orderWorksheet)
         return Promise.reject("Order worksheet was not retrieved yet.");
-      return await IntegrationEvents.Calculate('Outgoing', orderWorksheet.Order.ID);
+      return await IntegrationEvents.Calculate(
+        "Outgoing",
+        orderWorksheet.Order.ID,
+      );
     },
     onSuccess: async () => {
       if (autoApplyPromotions) applyPromotions();
