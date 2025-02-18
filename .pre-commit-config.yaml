@@ -11,4 +11,6 @@ repos:
     rev: v4.0.0-alpha.8 # Update this to the latest version if needed
     hooks:
       - id: prettier
+        args: ["--write"]
         files: "\\.(js|jsx|ts|tsx|json|css|scss|md|yaml|yml)$" # Specify file types
+        stages: [pre-commit]
