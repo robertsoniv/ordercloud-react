@@ -16,7 +16,7 @@ const INITIAL_ORDERCLOUD_CONTEXT: IOrderCloudContext = {
     return Promise.reject();
   },
   baseApiUrl: "https://api.ordercloud.io/v1",
-  clientId: "",
+  clientId: "xxxx",
   scope: [],
   customScope: [],
   allowAnonymous: false,
