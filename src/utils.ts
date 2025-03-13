@@ -3,7 +3,6 @@ import { DecodedToken, OrderCloudError } from "ordercloud-javascript-sdk";
 import { ServiceListOptions } from "./hooks/useOcResource";
 
 export const parseToken = (token: string) => {
-  console.log("somethingtotestwith", { asdf: 123, asdfasdf: "testing" });
   const parsed = jwtDecode<DecodedToken>(token);
   return parsed;
 };
