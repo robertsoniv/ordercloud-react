@@ -37,7 +37,7 @@ export interface IOrderCloudContext {
   /**
    * Signifies when authorization is in a loading state
    */
-  authLoading: boolean;
+    authLoading: boolean;
 
   /**
    * If anonymous, this will retrieve a new anon token, useful for anonymous
