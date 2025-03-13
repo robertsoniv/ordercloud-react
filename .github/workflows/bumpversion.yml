@@ -1,4 +1,4 @@
-name: Bump version and release
+name: Bump version, release, and publish
 
 permissions:
   contents: write
@@ -32,7 +32,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to npm
-          env:
-            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
-          run: |
-            npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm publish --access public  # Publish the package to npm
