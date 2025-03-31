@@ -1,8 +1,8 @@
-import { useContext } from "react"
-import { OrderCloudContext } from "../context"
+import { useContext } from "react";
+import { OrderCloudContext } from "../context";
 
 const useOrderCloudContext = () => {
-    return useContext(OrderCloudContext);
-}
+  return useContext(OrderCloudContext);
+};
 
 export default useOrderCloudContext;

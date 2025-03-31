@@ -1,3 +1,4 @@
 import { IOrderCloudContext } from "./IOrderCloudContext";
 
-export interface IOrderCloudErrorContext extends Omit<IOrderCloudContext, "defaultErrorHandler"> {}
+export interface IOrderCloudErrorContext
+  extends Omit<IOrderCloudContext, "defaultErrorHandler"> {}

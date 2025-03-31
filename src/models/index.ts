@@ -4,8 +4,8 @@ import { IOrderCloudErrorContext } from "./IOrderCloudErrorContext";
 import { IOrderCloudProvider } from "./IOrderCloudProvider";
 
 export type {
-    IOrderCloudContext,
-    IOrderCloudErrorContext,
-    IOrderCloudProvider,
-    IOrderCloudOperationObject
-}
+  IOrderCloudContext,
+  IOrderCloudErrorContext,
+  IOrderCloudProvider,
+  IOrderCloudOperationObject,
+};

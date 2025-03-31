@@ -1,5 +1,3 @@
 import { currencyFormats } from "./currencies";
 
-export {
-  currencyFormats
-};
+export { currencyFormats };

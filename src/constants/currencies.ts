@@ -18,13 +18,13 @@ interface ICurrencyData {
   dependencies?: Array<string>;
   renderCurrencyInputs(
     tableRow?: unknown,
-    params?: Array<string>
+    params?: Array<string>,
   ): CurrencyValues;
 }
 
 const getCurrencyValues = (
   language?: string | null,
-  currency?: string | null
+  currency?: string | null,
 ) => {
   // if no value passed in, use default from the provider
   const { currencyDefaults } = useOrderCloudContext();
