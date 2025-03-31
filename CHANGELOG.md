@@ -1,3 +1,9 @@
+## 0.3.6 (2025-03-31)
+
+### Fix
+
+- **query-client**: testing package updates to resolve build errors
+
 ## 0.3.5 (2025-03-28)
 
 ### Fix
